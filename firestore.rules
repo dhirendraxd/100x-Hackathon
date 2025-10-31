@@ -1,0 +1,124 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for security
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidString(value) {
+      return value is string && value.size() > 0 && value.size() <= 500;
+    }
+    
+    function isValidTimestamp(value) {
+      return value is timestamp;
+    }
+    
+    // Government Forms Collection
+    match /government_forms/{formId} {
+      // Anyone can read published forms
+      allow read: if resource.data.published == true || isOwner(resource.data.publishedByUserId);
+      
+      // Only authenticated users can create forms
+      allow create: if isAuthenticated() 
+        && isValidString(request.resource.data.name)
+        && isValidString(request.resource.data.department)
+        && isValidString(request.resource.data.documentType)
+        && request.resource.data.originalFields is list
+        && request.resource.data.sections is list
+        && isValidTimestamp(request.resource.data.createdAt)
+        && isValidTimestamp(request.resource.data.updatedAt);
+      
+      // Only form owner can update their own forms
+      allow update: if isAuthenticated() 
+        && (isOwner(resource.data.publishedByUserId) || resource.data.publishedByUserId == null)
+        && isValidTimestamp(request.resource.data.updatedAt);
+      
+      // Only owner can delete
+      allow delete: if isOwner(resource.data.publishedByUserId);
+    }
+    
+    // User Form Drafts Collection
+    match /user_drafts/{draftId} {
+      // Users can only read their own drafts
+      allow read: if isOwner(resource.data.userId);
+      
+      // Users can create their own drafts
+      allow create: if isAuthenticated() 
+        && request.resource.data.userId == request.auth.uid
+        && isValidString(request.resource.data.formId)
+        && request.resource.data.data is map
+        && isValidTimestamp(request.resource.data.createdAt);
+      
+      // Users can update their own drafts
+      allow update: if isOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId
+        && isValidTimestamp(request.resource.data.lastModifiedAt);
+      
+      // Users can delete their own drafts
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // Document Validations Collection
+    match /validations/{validationId} {
+      // Users can read their own validations or create anonymously
+      allow read: if isOwner(resource.data.userId);
+      
+      // Allow creation for both authenticated and guest users
+      allow create: if (isAuthenticated() && request.resource.data.userId == request.auth.uid) 
+        || (!isAuthenticated() && request.resource.data.userId == "guest")
+        && isValidString(request.resource.data.documentType)
+        && isValidTimestamp(request.resource.data.timestamp);
+      
+      // Users can update/delete their own validations
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+    
+    // Forms Collection (user submissions)
+    match /forms/{formId} {
+      // Users can read their own submissions or create anonymously
+      allow read: if isOwner(resource.data.userId);
+      
+      // Allow creation for both authenticated and guest users
+      allow create: if (isAuthenticated() && request.resource.data.userId == request.auth.uid)
+        || (!isAuthenticated() && request.resource.data.userId == "guest")
+        && isValidString(request.resource.data.formType)
+        && isValidTimestamp(request.resource.data.createdAt);
+      
+      // Users can update/delete their own submissions
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+    
+    // AI Form Guidance Collection
+    match /form_guidance/{formId} {
+      // Anyone can read guidance for forms
+      allow read: if true;
+      
+      // Only authenticated users can create/update guidance
+      allow create, update: if isAuthenticated()
+        && isValidTimestamp(request.resource.data.createdAt);
+      
+      // No one can delete guidance (keep for analytics)
+      allow delete: if false;
+    }
+    
+    // Health Check Collection (for monitoring)
+    match /health_checks/{checkId} {
+      // Allow authenticated users to write health checks
+      allow write: if isAuthenticated();
+      // Deny read to reduce quota usage
+      allow read: if false;
+    }
+    
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
