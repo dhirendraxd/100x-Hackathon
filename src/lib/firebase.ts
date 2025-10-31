@@ -56,7 +56,7 @@ if (useEmulators) {
     // Emulator connection failed or already connected; safe to ignore in production build
   }
   try {
-    connectFirestoreEmulator(db, '127.0.0.1', 8080);
+    connectFirestoreEmulator(db, '127.0.0.1', 8082);
   } catch (e) {
     // Emulator connection failed or already connected; safe to ignore in production build
   }

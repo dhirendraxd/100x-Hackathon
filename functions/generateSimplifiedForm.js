@@ -14,12 +14,14 @@
  * @returns {Object} - { success: boolean, formId: string, message: string, stats: {...} }
  */
 
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const { getFirestore } = require("firebase-admin/firestore");
-const { initializeApp } = require("firebase-admin/app");
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { getFirestore } from "firebase-admin/firestore";
+import { initializeApp, getApps } from "firebase-admin/app";
 
 // Initialize Firebase Admin
-initializeApp();
+if (!getApps().length) {
+  initializeApp();
+}
 const db = getFirestore();
 
 // Hugging Face API configuration
@@ -205,7 +207,7 @@ function generateFallbackSimplifiedField(originalField) {
 /**
  * Main callable function to generate simplified form
  */
-exports.generateSimplifiedForm = onCall(
+export const generateSimplifiedForm = onCall(
   { 
     timeoutSeconds: 540,
     memory: "1GiB",
@@ -349,7 +351,7 @@ exports.generateSimplifiedForm = onCall(
 /**
  * Batch function to generate simplified forms for multiple forms
  */
-exports.batchGenerateSimplifiedForms = onCall(
+export const batchGenerateSimplifiedForms = onCall(
   { 
     timeoutSeconds: 540,
     memory: "1GiB",

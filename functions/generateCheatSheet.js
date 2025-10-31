@@ -12,12 +12,14 @@
  * @returns {Object} - { success: boolean, cheatSheet: object, message: string }
  */
 
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const { getFirestore } = require("firebase-admin/firestore");
-const { initializeApp } = require("firebase-admin/app");
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { getFirestore } from "firebase-admin/firestore";
+import { initializeApp, getApps } from "firebase-admin/app";
 
 // Initialize Firebase Admin
-initializeApp();
+if (!getApps().length) {
+  initializeApp();
+}
 const db = getFirestore();
 
 // Hugging Face API configuration
@@ -231,7 +233,7 @@ function generateFallbackCheatSheet(formData) {
 /**
  * Main callable function to generate cheat sheet
  */
-exports.generateCheatSheet = onCall(
+export const generateCheatSheet = onCall(
   { 
     timeoutSeconds: 300,
     memory: "512MiB",
@@ -304,7 +306,7 @@ exports.generateCheatSheet = onCall(
 /**
  * Batch function to generate cheat sheets for multiple forms
  */
-exports.batchGenerateCheatSheets = onCall(
+export const batchGenerateCheatSheets = onCall(
   { 
     timeoutSeconds: 540,
     memory: "1GiB",

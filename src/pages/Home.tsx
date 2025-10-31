@@ -1,14 +1,31 @@
-import { CheckCircle2, FileText, Clock, ArrowRight, Shield, Zap, Upload } from "lucide-react";
-import { Link } from "react-router-dom";
+import { CheckCircle2, FileText, Clock, ArrowRight, Shield, Zap, Upload, Search } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ParticleBackground from "@/components/ParticleBackground";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 const Home = () => {
   const { user } = useAuthContext();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden">
   <ParticleBackground />
@@ -37,6 +54,35 @@ const Home = () => {
                 Digitize, understand, and fill Nepal government forms with ease. 
                 From passport applications to citizenship forms — all in one place.
               </p>
+
+              {/* Smart Search Bar */}
+              <div className="animate-fade-in">
+                <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
+                  <CardContent className="p-4">
+                    <div className="flex gap-3">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                          type="text"
+                          placeholder='Try "I want to get my passport" or "citizenship"...'
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                          className="pl-11 h-12 bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground"
+                        />
+                      </div>
+                      <Button 
+                        size="lg" 
+                        onClick={handleSearch}
+                        disabled={!searchQuery.trim()}
+                        className="px-6"
+                      >
+                        Search
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
               
               <div className="flex flex-col sm:flex-row gap-4 animate-fade-in">
                 {user ? (

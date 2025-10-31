@@ -13,6 +13,7 @@ import FormLibrary from "./pages/FormLibrary";
 import FormViewer from "./pages/FormViewer";
 import FormBuilder from "./pages/FormBuilder";
 import FormProgressDashboard from "./pages/FormProgressDashboard";
+import SmartSearch from "./pages/SmartSearch";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/search" element={<SmartSearch />} />
             {/* Redirect old dashboard route to form-progress */}
             <Route path="/dashboard" element={<Navigate to="/form-progress" replace />} />
             <Route path="/form-scraper" element={<FormScraper />} />
