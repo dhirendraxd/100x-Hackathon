@@ -54,15 +54,12 @@ const FormFiller = () => {
     motherName: "",
   });
 
-  // Nepal-specific services
+  // Limited to four core services
   const services = [
+    "National ID (NID)",
     "Passport",
     "Citizenship",
-    "Driving License",
-    "PAN Card",
-    "Birth Certificate",
-    "Marriage Registration",
-    "Police Clearance",
+    "Voter Card",
   ];
 
   const totalSteps = 4;
