@@ -24,3 +24,28 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation and setup files (avoid pushing these)
+AI_IMPLEMENTATION.md
+AI_SETUP_COMPLETE.md
+FEATURE_STATUS.md
+FORM_SCRAPER_WORKING.md
+MIGRATION_COMPLETE.md
+MOCK_DATA_MODE.md
+QUICK_START.md
+*_SETUP*.md
+*_STATUS.md
+*_COMPLETE.md
+docs/
+
+# Test and example files
+test-*.html
+example-*.json
+*.png
+*.svg
+!public/*.svg
+
+# Environment files
+.env
+.env.*
+!.env.example
