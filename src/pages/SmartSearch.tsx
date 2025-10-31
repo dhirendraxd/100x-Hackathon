@@ -228,8 +228,8 @@ export default function SmartSearch() {
                         </a>
                       </Button>
                       <Button asChild variant="outline">
-                        <Link to={`/form-viewer/${form.id}`}>
-                          View Guide
+                        <Link to={`/form-filler?service=${encodeURIComponent(form.name)}`}>
+                          Fill a Demo Form
                         </Link>
                       </Button>
                     </div>

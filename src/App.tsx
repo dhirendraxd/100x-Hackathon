@@ -12,6 +12,7 @@ import FormScraper from "./pages/FormScraper";
 import FormLibrary from "./pages/FormLibrary";
 import FormViewer from "./pages/FormViewer";
 import FormBuilder from "./pages/FormBuilder";
+import FormFiller from "./pages/FormFiller";
 import FormProgressDashboard from "./pages/FormProgressDashboard";
 import SmartSearch from "./pages/SmartSearch";
 import NotFound from "./pages/NotFound";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/form-library" element={<FormLibrary />} />
             <Route path="/form-viewer/:formId" element={<FormViewer />} />
             <Route path="/form-builder/:formId" element={<FormBuilder />} />
+            <Route path="/form-filler" element={<FormFiller />} />
             <Route path="/form-progress" element={<FormProgressDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

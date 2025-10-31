@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Save, Download, RotateCcw, ChevronRight, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +37,7 @@ type FormData = {
 
 const FormFiller = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const location = useLocation();
   const { user } = useAuthContext();
   const [formData, setFormData] = useState<FormData>({
     service: "",
@@ -52,12 +54,15 @@ const FormFiller = () => {
     motherName: "",
   });
 
+  // Nepal-specific services
   const services = [
     "Passport",
-    "PAN Card",
+    "Citizenship",
     "Driving License",
-    "Aadhaar Update",
-    "Voter ID",
+    "PAN Card",
+    "Birth Certificate",
+    "Marriage Registration",
+    "Police Clearance",
   ];
 
   const totalSteps = 4;
@@ -69,7 +74,15 @@ const FormFiller = () => {
     if (saved) {
       setFormData(JSON.parse(saved));
     }
-  }, []);
+    // Prefill service from query string (e.g., /form-filler?service=Passport)
+    const params = new URLSearchParams(location.search);
+    const svc = params.get("service");
+    if (svc) {
+      setFormData((prev) => ({ ...prev, service: svc }));
+      // Move to next step automatically if service provided
+      setCurrentStep(2);
+    }
+  }, [location.search]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -173,7 +186,7 @@ const FormFiller = () => {
               Smart Form Filler
             </h1>
             <p className="text-lg text-muted-foreground">
-              Fill government forms with smart suggestions and validation
+              Fill a simplified demo form similar to the official one
             </p>
           </div>
 
