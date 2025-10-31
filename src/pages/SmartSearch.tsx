@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Clock, Building2, MapPin, Navigation, Phone, Clock3, Home, Upload, X, AlertCircle } from 'lucide-react';
+import { FileText, Clock, Building2, MapPin, Navigation, Phone, Clock3, Home, Upload, X, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { validateDocumentEnhanced, formatFileSize, type EnhancedValidationResult } from '@/services/documentValidation';
 import { nepalGovForms, type GovForm } from '@/data/nepalGovForms';
+
+interface UploadedFile {
+  file: File;
+  validation?: EnhancedValidationResult;
+  isValidating: boolean;
+}
 
 export default function SmartSearch() {
   const { user } = useAuthContext();
   const [userLocation, setUserLocation] = useState<{ city: string; district: string; province: string } | null>(null);
-  const [uploadedDocs, setUploadedDocs] = useState<Record<string, File[]>>({});
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, UploadedFile[]>>({});
 
   // Get user location
   useEffect(() => {
@@ -41,8 +48,8 @@ export default function SmartSearch() {
     }
   }, []);
 
-  // Handle file upload
-  const handleFileUpload = (formId: string, file: File) => {
+  // Handle file upload with validation
+  const handleFileUpload = async (formId: string, file: File) => {
     if (!user) {
       toast.warning('Please log in to save your documents', {
         description: 'Documents will only be stored temporarily until you log in.',
@@ -50,12 +57,59 @@ export default function SmartSearch() {
       });
     }
     
+    // Add file with validating state
+    const uploadedFile: UploadedFile = {
+      file,
+      isValidating: true,
+    };
+    
     setUploadedDocs(prev => ({
       ...prev,
-      [formId]: [...(prev[formId] || []), file]
+      [formId]: [...(prev[formId] || []), uploadedFile]
     }));
     
-    toast.success(`${file.name} uploaded successfully`);
+    toast.info(`Validating ${file.name}...`);
+    
+    // Perform validation
+    try {
+      const validation = await validateDocumentEnhanced(file);
+      
+      // Update file with validation results
+      setUploadedDocs(prev => ({
+        ...prev,
+        [formId]: prev[formId].map(uf => 
+          uf.file === file ? { ...uf, validation, isValidating: false } : uf
+        )
+      }));
+      
+      // Show validation results
+      if (validation.valid) {
+        toast.success(`${file.name} validated successfully!`, {
+          description: validation.warnings.length > 0 
+            ? `${validation.warnings.length} warning(s) found` 
+            : 'Document meets all requirements'
+        });
+      } else {
+        toast.error(`${file.name} validation failed`, {
+          description: `${validation.errors.length} error(s) found`,
+          duration: 7000,
+        });
+      }
+      
+      // Show warnings if any
+      if (validation.warnings.length > 0 && validation.valid) {
+        validation.warnings.forEach(warning => {
+          toast.warning(warning, { duration: 5000 });
+        });
+      }
+      
+    } catch (error) {
+      toast.error('Failed to validate document');
+      setUploadedDocs(prev => ({
+        ...prev,
+        [formId]: prev[formId].filter(uf => uf.file !== file)
+      }));
+    }
   };
 
   // Remove uploaded file
@@ -235,17 +289,51 @@ export default function SmartSearch() {
                           <p className="text-xs font-medium text-muted-foreground">
                             Uploaded ({uploadedDocs[form.id].length}):
                           </p>
-                          {uploadedDocs[form.id].map((file, idx) => (
+                          {uploadedDocs[form.id].map((uploadedFile, idx) => (
                             <div
                               key={idx}
                               className="flex items-center justify-between bg-background p-2 rounded border"
                             >
                               <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <FileText className="h-4 w-4 text-primary flex-shrink-0" />
-                                <span className="text-xs truncate">{file.name}</span>
-                                <span className="text-xs text-muted-foreground flex-shrink-0">
-                                  ({(file.size / 1024).toFixed(1)} KB)
-                                </span>
+                                {uploadedFile.isValidating ? (
+                                  <>
+                                    <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 animate-pulse" />
+                                    <span className="text-xs truncate">{uploadedFile.file.name}</span>
+                                    <span className="text-xs text-muted-foreground">Validating...</span>
+                                  </>
+                                ) : uploadedFile.validation ? (
+                                  <>
+                                    <FileText className={`h-4 w-4 flex-shrink-0 ${
+                                      uploadedFile.validation.valid ? 'text-green-600' : 'text-red-600'
+                                    }`} />
+                                    <span className="text-xs truncate">{uploadedFile.file.name}</span>
+                                    <span className="text-xs text-muted-foreground flex-shrink-0">
+                                      ({formatFileSize(uploadedFile.file.size)})
+                                    </span>
+                                    {uploadedFile.validation.valid ? (
+                                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                        Valid
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                                        {uploadedFile.validation.errors.length} Error(s)
+                                      </Badge>
+                                    )}
+                                    {uploadedFile.validation.warnings.length > 0 && uploadedFile.validation.valid && (
+                                      <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                                        {uploadedFile.validation.warnings.length} Warning(s)
+                                      </Badge>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    <FileText className="h-4 w-4 text-primary flex-shrink-0" />
+                                    <span className="text-xs truncate">{uploadedFile.file.name}</span>
+                                    <span className="text-xs text-muted-foreground flex-shrink-0">
+                                      ({formatFileSize(uploadedFile.file.size)})
+                                    </span>
+                                  </>
+                                )}
                               </div>
                               <Button
                                 variant="ghost"
@@ -256,6 +344,28 @@ export default function SmartSearch() {
                                 <X className="h-4 w-4" />
                               </Button>
                             </div>
+                          ))}
+                          
+                          {/* Show validation errors/warnings for each file */}
+                          {uploadedDocs[form.id].map((uploadedFile, idx) => (
+                            uploadedFile.validation && !uploadedFile.isValidating && (
+                              <div key={`validation-${idx}`} className="space-y-1">
+                                {uploadedFile.validation.errors.map((error, errIdx) => (
+                                  <Alert key={`err-${errIdx}`} variant="destructive" className="py-2">
+                                    <AlertDescription className="text-xs">
+                                      <strong>{uploadedFile.file.name}:</strong> {error}
+                                    </AlertDescription>
+                                  </Alert>
+                                ))}
+                                {uploadedFile.validation.warnings.map((warning, warnIdx) => (
+                                  <Alert key={`warn-${warnIdx}`} className="py-2 border-yellow-300 bg-yellow-50">
+                                    <AlertDescription className="text-xs text-yellow-800">
+                                      <strong>{uploadedFile.file.name}:</strong> {warning}
+                                    </AlertDescription>
+                                  </Alert>
+                                ))}
+                              </div>
+                            )
                           ))}
                         </div>
                       )}
