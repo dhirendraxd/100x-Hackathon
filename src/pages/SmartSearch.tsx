@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Clock, Building2, MapPin, Navigation, Phone, Clock3 } from 'lucide-react';
+import { FileText, Clock, Building2, MapPin, Navigation, Phone, Clock3, Home, Upload, X, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import { nepalGovForms, type GovForm } from '@/data/nepalGovForms';
 
 export default function SmartSearch() {
+  const { user } = useAuthContext();
   const [userLocation, setUserLocation] = useState<{ city: string; district: string; province: string } | null>(null);
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, File[]>>({});
 
   // Get user location
   useEffect(() => {
@@ -36,6 +40,32 @@ export default function SmartSearch() {
       );
     }
   }, []);
+
+  // Handle file upload
+  const handleFileUpload = (formId: string, file: File) => {
+    if (!user) {
+      toast.warning('Please log in to save your documents', {
+        description: 'Documents will only be stored temporarily until you log in.',
+        duration: 5000,
+      });
+    }
+    
+    setUploadedDocs(prev => ({
+      ...prev,
+      [formId]: [...(prev[formId] || []), file]
+    }));
+    
+    toast.success(`${file.name} uploaded successfully`);
+  };
+
+  // Remove uploaded file
+  const removeFile = (formId: string, fileIndex: number) => {
+    setUploadedDocs(prev => ({
+      ...prev,
+      [formId]: prev[formId].filter((_, idx) => idx !== fileIndex)
+    }));
+    toast.info('Document removed');
+  };
 
   // Find nearest office based on user location
   const findNearestOffice = (form: GovForm) => {
@@ -67,9 +97,17 @@ export default function SmartSearch() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">Government Forms</h1>
-          <p className="text-muted-foreground mb-4">सरकारी फारमहरू</p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold">Government Forms</h1>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/">
+                <Home className="h-4 w-4 mr-2" />
+                Home
+              </Link>
+            </Button>
+          </div>
+          <p className="text-muted-foreground text-center">सरकारी फारमहरू</p>
         </div>
 
         {/* Location Info */}
@@ -78,6 +116,19 @@ export default function SmartSearch() {
             <MapPin className="h-4 w-4 text-primary" />
             <AlertDescription>
               Showing offices near <strong>{userLocation.city}, {userLocation.district}</strong>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Login Warning for Documents */}
+        {!user && (
+          <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
+            <AlertCircle className="h-4 w-4 text-yellow-500" />
+            <AlertDescription>
+              <strong>Note:</strong> Documents uploaded will only be saved temporarily. 
+              <Link to="/login" className="text-primary hover:underline font-medium ml-1">
+                Log in
+              </Link> to save your documents permanently.
             </AlertDescription>
           </Alert>
         )}
@@ -133,6 +184,81 @@ export default function SmartSearch() {
                           </li>
                         ))}
                       </ul>
+                    </div>
+
+                    {/* Document Upload Section */}
+                    <div className="bg-blue-500/5 border border-blue-500/20 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="font-semibold text-sm flex items-center gap-2">
+                          <Upload className="h-4 w-4 text-blue-500" />
+                          Upload Your Documents
+                        </p>
+                        {!user && (
+                          <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-600">
+                            Not Saved
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {/* Upload Button */}
+                      <div className="mb-3">
+                        <input
+                          type="file"
+                          id={`file-upload-${form.id}`}
+                          className="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleFileUpload(form.id, file);
+                              e.target.value = ''; // Reset input
+                            }
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => document.getElementById(`file-upload-${form.id}`)?.click()}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Choose Files
+                        </Button>
+                        <p className="text-xs text-muted-foreground mt-1 text-center">
+                          PDF, JPG, PNG, DOC (Max 10MB)
+                        </p>
+                      </div>
+
+                      {/* Uploaded Files List */}
+                      {uploadedDocs[form.id] && uploadedDocs[form.id].length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Uploaded ({uploadedDocs[form.id].length}):
+                          </p>
+                          {uploadedDocs[form.id].map((file, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-between bg-background p-2 rounded border"
+                            >
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <FileText className="h-4 w-4 text-primary flex-shrink-0" />
+                                <span className="text-xs truncate">{file.name}</span>
+                                <span className="text-xs text-muted-foreground flex-shrink-0">
+                                  ({(file.size / 1024).toFixed(1)} KB)
+                                </span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={() => removeFile(form.id, idx)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Nearest Office Info */}
