@@ -1,263 +1,269 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { Search, Sparkles, ArrowRight, FileText } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
-import ParticleBackground from "@/components/ParticleBackground";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useAuthContext } from "@/contexts/AuthContext";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState, useEffect } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { Search, FileText, Clock, Building2, MapPin, Navigation, Phone, Clock3 } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { nepalGovForms, type GovForm } from '@/data/nepalGovForms';
 
-// Mock form database - match user intent to forms
-const FORM_DATABASE = [
-  {
-    id: "passport-form",
-    name: "Passport Application Form",
-    keywords: ["passport", "travel document", "international travel", "visa"],
-    department: "Department of Passport",
-    description: "Apply for a new passport or renew your existing one",
-    estimatedTime: "30 minutes",
-  },
-  {
-    id: "citizenship-form",
-    name: "Citizenship Certificate Application",
-    keywords: ["citizenship", "nagarikta", "national id", "identity"],
-    department: "District Administration Office",
-    description: "Apply for citizenship certificate",
-    estimatedTime: "25 minutes",
-  },
-  {
-    id: "driving-license-form",
-    name: "Driving License Application",
-    keywords: ["driving license", "license", "vehicle", "car", "bike", "motorcycle"],
-    department: "Department of Transport Management",
-    description: "Apply for a new driving license",
-    estimatedTime: "20 minutes",
-  },
-  {
-    id: "pan-card-form",
-    name: "PAN Card Registration",
-    keywords: ["pan", "tax", "permanent account number", "tax id"],
-    department: "Inland Revenue Department",
-    description: "Register for PAN (Permanent Account Number)",
-    estimatedTime: "15 minutes",
-  },
-  {
-    id: "birth-certificate-form",
-    name: "Birth Certificate Application",
-    keywords: ["birth certificate", "birth registration", "new born", "baby"],
-    department: "Local Administration",
-    description: "Register birth and get birth certificate",
-    estimatedTime: "20 minutes",
-  },
-];
 
-const SmartSearch = () => {
-  const { user } = useAuthContext();
-  const [searchParams] = useSearchParams();
-  const [query, setQuery] = useState(searchParams.get("q") || "");
-  const [results, setResults] = useState<typeof FORM_DATABASE>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const navigate = useNavigate();
+export default function SmartSearch() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get('q') || '');
+  const [results, setResults] = useState<GovForm[]>([]);
+  const [userLocation, setUserLocation] = useState<{ city: string; district: string; province: string } | null>(null);
 
-  // Auto-search if query comes from URL
+  // Get user location
   useEffect(() => {
-    const urlQuery = searchParams.get("q");
-    if (urlQuery) {
-      setQuery(urlQuery);
-      performSearch(urlQuery);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json&accept-language=en`
+            );
+            const data = await response.json();
+            
+            setUserLocation({
+              city: data.address.city || data.address.town || data.address.village || 'Unknown',
+              district: data.address.state_district || data.address.county || 'Unknown',
+              province: data.address.state || 'Unknown'
+            });
+          } catch (error) {
+            console.error('Error fetching location:', error);
+          }
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+        }
+      );
+    }
+  }, []);
+
+  // Search logic
+  useEffect(() => {
+    const searchQuery = searchParams.get('q') || '';
+    setQuery(searchQuery);
+    
+    if (searchQuery.trim()) {
+      const searchTerms = searchQuery.toLowerCase().split(' ');
+      const scored = nepalGovForms.map(form => {
+        let score = 0;
+        searchTerms.forEach(term => {
+          if (form.name.toLowerCase().includes(term)) score += 10;
+          if (form.nameNepali.includes(term)) score += 10;
+          if (form.description.toLowerCase().includes(term)) score += 5;
+          if (form.keywords.some(keyword => keyword.includes(term))) score += 3;
+          if (form.department.toLowerCase().includes(term)) score += 2;
+        });
+        return { ...form, score };
+      });
+      
+      const filtered = scored.filter(form => form.score > 0);
+      filtered.sort((a, b) => b.score - a.score);
+      setResults(filtered);
+    } else {
+      setResults([]);
     }
   }, [searchParams]);
 
-  const performSearch = (searchQuery: string) => {
-    if (!searchQuery.trim()) return;
-
-    setIsSearching(true);
-
-    // Simple keyword matching algorithm
-    const searchTerms = searchQuery.toLowerCase().split(" ");
-    const matches = FORM_DATABASE.filter((form) => {
-      const formText = `${form.name} ${form.keywords.join(" ")} ${form.description}`.toLowerCase();
-      return searchTerms.some((term) => formText.includes(term));
-    }).sort((a, b) => {
-      // Sort by relevance (number of matching keywords)
-      const aMatches = searchTerms.filter((term) => 
-        `${a.name} ${a.keywords.join(" ")}`.toLowerCase().includes(term)
-      ).length;
-      const bMatches = searchTerms.filter((term) => 
-        `${b.name} ${b.keywords.join(" ")}`.toLowerCase().includes(term)
-      ).length;
-      return bMatches - aMatches;
-    });
-
-    setTimeout(() => {
-      setResults(matches);
-      setIsSearching(false);
-    }, 500); // Simulate API delay
-  };
-
-  const handleSearch = () => {
-    performSearch(query);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch();
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      setSearchParams({ q: query });
     }
   };
 
-  const handleFormSelect = (formId: string) => {
-    // Navigate to form viewer (you can customize this route)
-    navigate(`/form-viewer/${formId}`);
+  // Find nearest office based on user location
+  const findNearestOffice = (form: GovForm) => {
+    if (!userLocation) return form.offices[0];
+    
+    // Try to match by city first
+    let nearestOffice = form.offices.find(
+      office => office.city.toLowerCase() === userLocation.city.toLowerCase()
+    );
+    
+    // If no city match, try district
+    if (!nearestOffice) {
+      nearestOffice = form.offices.find(
+        office => office.district.toLowerCase() === userLocation.district.toLowerCase()
+      );
+    }
+    
+    // If no district match, try province
+    if (!nearestOffice) {
+      nearestOffice = form.offices.find(
+        office => office.province.toLowerCase() === userLocation.province.toLowerCase()
+      );
+    }
+    
+    return nearestOffice || form.offices[0];
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-background">
-      <ParticleBackground />
-      <Navigation />
-
-      <div className="container mx-auto max-w-5xl px-4 pt-32 pb-20">
-        {/* Header */}
-        <div className="text-center mb-12 space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">AI-Powered Form Search</span>
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl font-bold gradient-text-green">
-            What do you need help with?
-          </h1>
-          
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Just tell us what you want to do, and we'll find the right form for you
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Search Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Find Your Government Form</h1>
+          <p className="text-muted-foreground mb-4">सरकारी फारम खोज्नुहोस्</p>
+          <form onSubmit={handleSearch} className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+            <Input
+              type="text"
+              placeholder="e.g., I want to apply for passport / राहदानी आवेदन"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-10 pr-4 py-6 text-lg"
+            />
+            <Button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              Search
+            </Button>
+          </form>
         </div>
 
-        {/* Search Bar */}
-        <div className="max-w-3xl mx-auto mb-12">
-          <Card className="border-2 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder='Try "I want to get my passport" or "apply for citizenship"...'
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    className="pl-12 h-14 text-lg"
-                  />
-                </div>
-                <Button 
-                  size="lg" 
-                  onClick={handleSearch}
-                  disabled={isSearching || !query.trim()}
-                  className="px-8"
-                >
-                  {isSearching ? "Searching..." : "Search"}
-                </Button>
-              </div>
-              
-              {/* Quick suggestions */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="text-sm text-muted-foreground">Try:</span>
-                {["passport", "citizenship", "driving license", "PAN card"].map((suggestion) => (
-                  <Button
-                    key={suggestion}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setQuery(suggestion);
-                      setTimeout(handleSearch, 100);
-                    }}
-                    className="text-xs"
-                  >
-                    {suggestion}
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Login Hint for Non-logged Users */}
-        {!user && (
-          <Alert className="max-w-3xl mx-auto mb-8 bg-primary/5 border-primary/20">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <AlertDescription className="text-sm">
-              <strong>Tip:</strong> <Link to="/login" className="text-primary hover:underline font-medium">Login</Link> or <Link to="/signup" className="text-primary hover:underline font-medium">Sign up</Link> to save your form progress and access your dashboard anytime!
+        {/* Location Info */}
+        {userLocation && (
+          <Alert className="mb-6 border-primary/20 bg-primary/5">
+            <MapPin className="h-4 w-4 text-primary" />
+            <AlertDescription>
+              Showing results for <strong>{userLocation.city}, {userLocation.district}</strong>
             </AlertDescription>
           </Alert>
         )}
 
         {/* Results */}
-        {results.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">
-                Found {results.length} form{results.length !== 1 ? "s" : ""}
-              </h2>
-            </div>
-
-            <div className="grid gap-4">
-              {results.map((form) => (
-                <Card 
-                  key={form.id} 
-                  className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/50"
-                  onClick={() => handleFormSelect(form.id)}
-                >
+        {results.length > 0 ? (
+          <div className="space-y-6">
+            <p className="text-muted-foreground">Found {results.length} form(s)</p>
+            {results.map((form) => {
+              const nearestOffice = findNearestOffice(form);
+              return (
+                <Card key={form.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-xl mb-2 flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2">
                           <FileText className="h-5 w-5 text-primary" />
-                          {form.name}
+                          <div>
+                            <div>{form.name}</div>
+                            <div className="text-sm font-normal text-muted-foreground mt-1">
+                              {form.nameNepali}
+                            </div>
+                          </div>
                         </CardTitle>
-                        <CardDescription className="text-base">
+                        <CardDescription className="mt-2">
                           {form.description}
                         </CardDescription>
                       </div>
-                      <Button size="sm" className="gap-2">
-                        Open <ArrowRight className="h-4 w-4" />
-                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Building2 className="h-3 w-3" />
+                        {form.department}
+                      </Badge>
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {form.estimatedTime}
+                      </Badge>
+                      {form.fees && (
+                        <Badge variant="outline" className="text-green-600 border-green-600">
+                          Fees: {form.fees}
+                        </Badge>
+                      )}
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <Badge variant="outline">{form.department}</Badge>
-                      <span>⏱️ {form.estimatedTime}</span>
+                  <CardContent className="space-y-4">
+                    {/* Required Documents */}
+                    <div className="bg-muted/30 p-4 rounded-lg">
+                      <p className="font-semibold text-sm mb-2">Required Documents:</p>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        {form.requiredDocuments.map((doc, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-primary mt-1">•</span>
+                            <span>{doc}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Nearest Office Info */}
+                    <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg">
+                      <div className="flex items-start gap-2 mb-3">
+                        <Navigation className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm text-primary mb-1">
+                            Nearest Office ({nearestOffice.district}):
+                          </p>
+                          <p className="text-sm font-medium">{nearestOffice.address}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {nearestOffice.city}, {nearestOffice.province}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        {nearestOffice.contact && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-muted-foreground">{nearestOffice.contact}</span>
+                          </div>
+                        )}
+                        {nearestOffice.timings && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Clock3 className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-muted-foreground text-xs">{nearestOffice.timings}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3">
+                      <Button asChild className="flex-1">
+                        <a href={form.formUrl} target="_blank" rel="noopener noreferrer">
+                          Open Official Portal
+                        </a>
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link to={`/form-viewer/${form.id}`}>
+                          View Guide
+                        </Link>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        )}
-
-        {/* No results */}
-        {query && results.length === 0 && !isSearching && (
-          <Card className="max-w-2xl mx-auto text-center p-12">
-            <CardContent>
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold mb-2">No forms found</h3>
-              <p className="text-muted-foreground mb-6">
-                We couldn't find any forms matching "{query}". Try different keywords or browse our form library.
+        ) : query.trim() ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-lg font-medium mb-2">No forms found</p>
+              <p className="text-muted-foreground mb-4">
+                Try different keywords like "passport", "citizenship", "license", etc.
               </p>
-              <Button onClick={() => navigate("/form-library")}>
-                Browse All Forms
-              </Button>
+              <p className="text-sm text-muted-foreground">
+                राहदानी, नागरिकता, सवारी चालक जस्ता शब्दहरू प्रयोग गरी खोज्नुहोस्
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-lg font-medium mb-2">Start Your Search</p>
+              <p className="text-muted-foreground">
+                Tell us what form you're looking for and we'll help you find it
+              </p>
             </CardContent>
           </Card>
         )}
       </div>
-
-      <Footer />
     </div>
   );
-};
+}
 
-export default SmartSearch;
