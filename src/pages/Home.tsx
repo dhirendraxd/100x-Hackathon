@@ -6,6 +6,7 @@ import ParticleBackground from "@/components/ParticleBackground";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthContext } from "@/contexts/AuthContext";
+import LocationDetector from "@/components/LocationDetector";
 
 const Home = () => {
   const { user } = useAuthContext();
@@ -71,6 +72,11 @@ const Home = () => {
                     </Link>
                   </>
                 )}
+              </div>
+
+              {/* Location Detector below buttons */}
+              <div className="animate-fade-in flex justify-start">
+                <LocationDetector />
               </div>
             </div>
 

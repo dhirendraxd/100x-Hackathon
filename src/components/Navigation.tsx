@@ -20,22 +20,6 @@ const Navigation = () => {
 
   return (
     <nav className="absolute top-0 left-0 right-0 z-50">
-      {/* Location Bar - Top Banner */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 backdrop-blur-sm border-b border-primary/20">
-        <div className="container mx-auto px-4 py-2.5">
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-muted-foreground hidden sm:flex items-center gap-2">
-              <span>📍</span>
-              <span>Your location helps us find nearby offices and services</span>
-            </div>
-            <div className="flex-1 sm:flex-none flex justify-center sm:justify-end">
-              <LocationDetector />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Navigation */}
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
