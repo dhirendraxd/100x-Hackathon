@@ -1,30 +1,14 @@
-import { CheckCircle2, FileText, Clock, ArrowRight, Shield, Zap, Upload, Search } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { CheckCircle2, FileText, Clock, ArrowRight, Shield, Zap, Upload } from "lucide-react";
+import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ParticleBackground from "@/components/ParticleBackground";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
 
 const Home = () => {
   const { user } = useAuthContext();
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -54,45 +38,6 @@ const Home = () => {
                 Digitize, understand, and fill Nepal government forms with ease. 
                 From passport applications to citizenship forms — all in one place.
               </p>
-
-              {/* Smart Search Bar */}
-              <div className="animate-fade-in">
-                <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
-                  <CardContent className="p-4">
-                    <div className="flex gap-3">
-                      <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input
-                          type="text"
-                          placeholder='Try "I want to get my passport" or "citizenship"...'
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                          className="pl-11 h-12 bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground"
-                        />
-                      </div>
-                      <Button 
-                        size="lg" 
-                        onClick={handleSearch}
-                        disabled={!searchQuery.trim()}
-                        className="px-6"
-                      >
-                        Search
-                      </Button>
-                    </div>
-                    
-                    {/* Login hint for non-logged in users */}
-                    {!user && (
-                      <div className="mt-3 p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-center gap-2 text-sm">
-                        <span className="text-primary">💡</span>
-                        <span className="text-foreground/90">
-                          <Link to="/login" className="text-primary hover:underline font-medium">Login</Link> or <Link to="/signup" className="text-primary hover:underline font-medium">Sign up</Link> to save your progress and access your forms anytime
-                        </span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
               
               <div className="flex flex-col sm:flex-row gap-4 animate-fade-in">
                 {user ? (
@@ -112,15 +57,16 @@ const Home = () => {
                   </>
                 ) : (
                   <>
-                    <Link to="/login">
+                    <Link to="/search">
                       <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
-                        LOGIN
+                        GET STARTED
                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </Link>
-                    <Link to="/signup">
+                    <Link to="/form-library">
                       <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                        SIGN UP
+                        BROWSE FORMS
+                        <FileText className="h-4 w-4" />
                       </Button>
                     </Link>
                   </>

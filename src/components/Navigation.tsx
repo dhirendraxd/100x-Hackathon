@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Home, User, LogIn, Upload, Library, BarChart3 } from "lucide-react";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { useAuthContext } from "@/contexts/AuthContext";
 import LocationDetector from "./LocationDetector";
 
@@ -13,7 +14,6 @@ const Navigation = () => {
   const navItems = [
     { path: "/", label: "Home", icon: Home },
     { path: "/form-library", label: "Form Library", icon: Library },
-    { path: "/form-scraper", label: "Form Scraper", icon: Upload },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -65,8 +65,8 @@ const Navigation = () => {
                 );
               })}
             
-            {/* My Progress visible to all users (hide on current page) */}
-            {!isActive("/form-progress") && (
+            {/* My Progress - Only visible to logged in users */}
+            {user && !isActive("/form-progress") && (
               <Link to="/form-progress">
                 <Button variant="outline" size="sm" className="gap-2">
                   <BarChart3 className="w-4 h-4" />
@@ -75,22 +75,26 @@ const Navigation = () => {
               </Link>
             )}
 
-            {/* Auth Buttons */}
+            {/* Auth Button - Single Join Now */}
             {!user && (
-              <>
-                <Link to="/login">
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <LogIn className="w-4 h-4" />
-                    Login
-                  </Button>
-                </Link>
+              <div className="flex items-center ml-4 pl-4 border-l border-border/50">
                 <Link to="/signup">
-                  <Button size="sm" className="gap-2 bg-gradient-primary">
-                    <User className="w-4 h-4" />
-                    Sign Up
+                  <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+                    <User className="w-3.5 h-3.5" />
+                    <span className="text-xs">Join Now</span>
                   </Button>
                 </Link>
-              </>
+              </div>
+            )}
+
+            {/* Logged in user badge */}
+            {user && (
+              <div className="flex items-center gap-2 ml-4 pl-4 border-l border-border/50">
+                <Badge variant="outline" className="gap-2">
+                  <User className="w-3 h-3" />
+                  {user.email?.split("@")[0] || "User"}
+                </Badge>
+              </div>
             )}
           </div>
 
@@ -125,31 +129,39 @@ const Navigation = () => {
                 );
               })}
             
-            {/* Mobile Auth Button */}
-            <div className="pt-2">
-              {!isActive("/form-progress") && (
+            {/* Mobile Auth Buttons */}
+            <div className="pt-2 space-y-2">
+              {/* My Progress - Only for logged in users */}
+              {user && !isActive("/form-progress") && (
                 <Link to="/form-progress" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" className="w-full gap-2 mb-2">
+                  <Button variant="outline" className="w-full gap-2">
                     <BarChart3 className="w-4 h-4" />
                     My Progress
                   </Button>
                 </Link>
               )}
+
+              {/* Auth button - Single Join Now */}
               {!user && (
-                <>
-                  <Link to="/login" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline" className="w-full gap-2 mb-2">
-                      <LogIn className="w-4 h-4" />
-                      Login
-                    </Button>
-                  </Link>
+                <div className="border-t border-border/50 pt-4 mt-4">
+                  <p className="text-xs text-muted-foreground mb-3 px-2">Save your progress:</p>
                   <Link to="/signup" onClick={() => setIsOpen(false)}>
-                    <Button className="w-full gap-2 bg-gradient-primary">
+                    <Button variant="ghost" className="w-full gap-2 justify-start text-muted-foreground">
                       <User className="w-4 h-4" />
-                      Sign Up
+                      Join Now
                     </Button>
                   </Link>
-                </>
+                </div>
+              )}
+
+              {/* Logged in user */}
+              {user && (
+                <div className="border-t border-border/50 pt-4 mt-4">
+                  <Badge variant="outline" className="gap-2">
+                    <User className="w-3 h-3" />
+                    {user.email?.split("@")[0] || "User"}
+                  </Badge>
+                </div>
               )}
             </div>
           </div>
