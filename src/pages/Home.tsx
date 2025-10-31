@@ -80,6 +80,16 @@ const Home = () => {
                         Search
                       </Button>
                     </div>
+                    
+                    {/* Login hint for non-logged in users */}
+                    {!user && (
+                      <div className="mt-3 p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-center gap-2 text-sm">
+                        <span className="text-primary">💡</span>
+                        <span className="text-foreground/90">
+                          <Link to="/login" className="text-primary hover:underline font-medium">Login</Link> or <Link to="/signup" className="text-primary hover:underline font-medium">Sign up</Link> to save your progress and access your forms anytime
+                        </span>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

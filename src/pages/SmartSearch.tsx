@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Search, Sparkles, ArrowRight, FileText } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Mock form database - match user intent to forms
 const FORM_DATABASE = [
@@ -54,6 +56,7 @@ const FORM_DATABASE = [
 ];
 
 const SmartSearch = () => {
+  const { user } = useAuthContext();
   const [searchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [results, setResults] = useState<typeof FORM_DATABASE>([]);
@@ -180,6 +183,16 @@ const SmartSearch = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Login Hint for Non-logged Users */}
+        {!user && (
+          <Alert className="max-w-3xl mx-auto mb-8 bg-primary/5 border-primary/20">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-sm">
+              <strong>Tip:</strong> <Link to="/login" className="text-primary hover:underline font-medium">Login</Link> or <Link to="/signup" className="text-primary hover:underline font-medium">Sign up</Link> to save your form progress and access your dashboard anytime!
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Results */}
         {results.length > 0 && (

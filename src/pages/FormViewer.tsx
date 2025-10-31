@@ -33,8 +33,10 @@ import {
   BookOpen,
   FileCheck,
   HelpCircle,
+  LogIn,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 const FormViewer = () => {
   const { formId } = useParams<{ formId: string }>();
@@ -203,6 +205,18 @@ const FormViewer = () => {
   <div className="h-20 md:h-28" />
 
       <div className="container mx-auto px-4 py-12">
+        {/* Login Hint Banner for Non-logged Users */}
+        {!user && (
+          <Alert className="mb-6 bg-primary/5 border-primary/20">
+            <LogIn className="h-4 w-4 text-primary" />
+            <AlertDescription>
+              <strong>Want to save your progress?</strong>{" "}
+              <Link to="/login" className="text-primary hover:underline font-medium">Login</Link> or{" "}
+              <Link to="/signup" className="text-primary hover:underline font-medium">Sign up</Link> to save your forms and track your applications.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Back Button */}
         <Button
           variant="ghost"
