@@ -159,4 +159,4 @@ Project maintained by [dhirendraxd](https://github.com/dhirendraxd)
 
 ---
 
-Made with ♥ for Nepali Citizens
+Made with ♥ for Indian Citizens
