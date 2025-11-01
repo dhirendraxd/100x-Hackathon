@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Save, Download, RotateCcw, ChevronRight, AlertCircle, Sparkles, Lightbulb } from "lucide-react";
+import { Save, RotateCcw, Download, ChevronRight, Lightbulb, Sparkles, ListChecks, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,8 @@ import { saveFormDraft, saveFormSubmission } from "@/services/formService";
 import { storage } from "@/lib/firebase";
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { nepalGovForms } from "@/data/nepalGovForms";
+import { DEMO_MODE } from "@/lib/config";
 import { getAutofillData, type AutofillData } from "@/services/userProfileService";
 import { getProgressMessage } from "@/services/fieldHintService";
 
@@ -388,7 +390,19 @@ const FormFiller = () => {
   };
 
   const saveProgress = async () => {
-    // Require login for saving progress
+    // Demo: allow saving without login
+    if (!user && DEMO_MODE) {
+      const key = `form_draft_${Date.now()}`;
+      try {
+        localStorage.setItem(key, JSON.stringify({ ...formData, nidDetails }));
+        localStorage.setItem("formData", JSON.stringify(formData));
+        localStorage.setItem("nidDetails", JSON.stringify(nidDetails));
+      } catch {/* noop */}
+      toast.success('Progress saved (demo mode)');
+      return;
+    }
+
+    // Require login otherwise
     if (!user) {
       toast.error('Please log in to save your progress.');
       return;
@@ -402,11 +416,10 @@ const FormFiller = () => {
         { ...formData, nidDetails }
       );
       toast.success("Progress saved to your dashboard!");
-      // Optional: also mirror to localStorage for quick recovery after refresh
       try {
         localStorage.setItem("formData", JSON.stringify(formData));
         localStorage.setItem("nidDetails", JSON.stringify(nidDetails));
-      } catch { /* noop */ }
+      } catch {/* noop */}
     } catch (error) {
       console.error('Failed to save to Firestore:', error);
       toast.error("Failed to save. Please try again.");
@@ -479,7 +492,8 @@ const FormFiller = () => {
   };
 
   const downloadForm = async () => {
-    if (!user) {
+    // Allow without login in DEMO mode
+    if (!user && !DEMO_MODE) {
       toast.error('Please log in to download your form.');
       return;
     }
@@ -517,18 +531,35 @@ const FormFiller = () => {
       </body></html>`;
 
       const blob = new Blob([summaryHtml], { type: 'text/html' });
-
-      // 2) Upload to Firebase Storage
       const filenameSlug = (formData.service || 'form').toLowerCase().replace(/[^a-z0-9]+/g,'-');
-      const path = `userForms/${user.uid}/${Date.now()}-${filenameSlug}.html`;
-      const sref = storageRef(storage, path);
-      await uploadBytes(sref, blob, { contentType: 'text/html' });
-      const fileUrl = await getDownloadURL(sref);
 
-      // 3) Persist a submission record
-      await saveFormSubmission(user.uid, formData.service || 'general', { ...formData, nidDetails }, { pdfUrl: fileUrl });
+      let fileUrl: string;
+      if (DEMO_MODE) {
+        // Demo: use object URL and store a local submission record
+        fileUrl = URL.createObjectURL(blob);
+        const submissionKey = `form_submission_${Date.now()}`;
+        const submission = {
+          id: submissionKey,
+          userId: user?.uid || 'demo',
+          formType: formData.service || 'general',
+          data: { ...formData, nidDetails, pdfUrl: fileUrl },
+          status: 'submitted',
+          lastUpdated: new Date().toISOString(),
+        };
+        try {
+          localStorage.setItem(submissionKey, JSON.stringify(submission));
+        } catch (e) {
+          // ignore storage errors in demo mode
+        }
+      } else {
+        // Real: upload to Firebase Storage and persist submission
+        const path = `userForms/${user!.uid}/${Date.now()}-${filenameSlug}.html`;
+        const sref = storageRef(storage, path);
+        await uploadBytes(sref, blob, { contentType: 'text/html' });
+        fileUrl = await getDownloadURL(sref);
+        await saveFormSubmission(user!.uid, formData.service || 'general', { ...formData, nidDetails }, { pdfUrl: fileUrl });
+      }
 
-      // 4) Trigger client download of the same HTML (acts as offline copy)
       const a = document.createElement('a');
       a.href = fileUrl;
       a.download = `${filenameSlug}-summary.html`;
@@ -536,22 +567,23 @@ const FormFiller = () => {
       a.click();
       a.remove();
 
-      // 5) Email the user with the link
-      try {
-        const { sendCustomNotification } = await import('@/services/notificationService');
-        const subject = `${formData.service || 'Form'} – Your submission link`;
-        const html = `<div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6">
+      if (!DEMO_MODE && user?.email) {
+        try {
+          const { sendCustomNotification } = await import('@/services/notificationService');
+          const subject = `${formData.service || 'Form'} – Your submission link`;
+          const html = `<div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6">
             <h2>${subject}</h2>
             <p>Thanks for using Mitra Smart. Your form summary is ready.</p>
             <p><a href="${fileUrl}" target="_blank">View / Download your form</a></p>
             <p style="color:#64748b">You can also find this under My Submissions in your dashboard.</p>
           </div>`;
-        if (user.email) await sendCustomNotification(user.email, subject, html);
-      } catch (e) {
-        console.warn('Failed to send email notification', e);
+          await sendCustomNotification(user.email, subject, html);
+        } catch (e) {
+          console.warn('Failed to send email notification', e);
+        }
       }
 
-      toast.success('Form saved to your dashboard and a download link was emailed to you.');
+      toast.success(DEMO_MODE ? 'Form generated for demo and downloaded locally.' : 'Form saved to your dashboard and a download link was emailed to you.');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Unknown error';
       console.error('Download form error:', msg);
@@ -595,6 +627,13 @@ const FormFiller = () => {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  // Find "Next Steps" for the selected service (if present in Nepal Gov forms data)
+  const currentServiceNextSteps = (() => {
+    if (!formData.service) return [] as string[];
+    const match = nepalGovForms.find(f => f.name.toLowerCase() === formData.service.toLowerCase());
+    return match?.nextSteps || [];
+  })();
 
   return (
     <div className="min-h-screen bg-gradient-dark relative">
@@ -1415,7 +1454,7 @@ const FormFiller = () => {
                   ) : (
                     <Button
                       onClick={downloadForm}
-                      disabled={!user}
+                      disabled={!user && !DEMO_MODE}
                       className="ml-auto bg-gradient-success hover:shadow-glow"
                     >
                       <Download className="w-4 h-4 mr-2" /> Download Form
@@ -1431,13 +1470,13 @@ const FormFiller = () => {
                 {showAllFields && (
                   <Button
                     onClick={downloadForm}
-                    disabled={!user}
+                    disabled={!user && !DEMO_MODE}
                     className="bg-gradient-success hover:shadow-glow"
                   >
                     <Download className="w-4 h-4 mr-2" /> Download Form
                   </Button>
                 )}
-                <Button onClick={saveProgress} variant="outline" disabled={!user}>
+                <Button onClick={saveProgress} variant="outline" disabled={!user && !DEMO_MODE}>
                   <Save className="w-4 h-4 mr-2" /> Save Progress
                 </Button>
                 <Button onClick={resetForm} variant="outline">
@@ -1451,6 +1490,28 @@ const FormFiller = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Next Steps (from selected service), shown at the bottom of the demo form page */}
+          {currentServiceNextSteps.length > 0 && (
+            <Card className="mt-6 bg-card/50 backdrop-blur border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <ListChecks className="h-5 w-5 text-primary" />
+                  Next Steps
+                </CardTitle>
+                <CardDescription>
+                  What to do after completing this form
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ol className="list-decimal ml-5 space-y-2 text-sm text-muted-foreground">
+                  {currentServiceNextSteps.map((step, idx) => (
+                    <li key={idx}>{step}</li>
+                  ))}
+                </ol>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
       <Footer />

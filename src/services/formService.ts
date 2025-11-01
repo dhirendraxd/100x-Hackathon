@@ -1,4 +1,4 @@
-import { collection, addDoc, updateDoc, doc, getDocs, query, where, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, getDocs, query, where, Timestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export interface FormData {
@@ -151,5 +151,16 @@ export const getFormById = async (formId: string): Promise<FormData | null> => {
   } catch (error) {
     console.error('Error getting form:', error);
     throw new Error('Failed to fetch form');
+  }
+};
+
+// Delete a form by ID
+export const deleteForm = async (formId: string): Promise<void> => {
+  try {
+    const formRef = doc(db, 'forms', formId);
+    await deleteDoc(formRef);
+  } catch (error) {
+    console.error('Error deleting form:', error);
+    throw new Error('Failed to delete form');
   }
 };

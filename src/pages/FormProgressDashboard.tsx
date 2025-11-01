@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { deleteForm } from "@/services/formService";
+import { DEMO_MODE } from "@/lib/config";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -129,47 +131,85 @@ const FormProgressDashboard = () => {
   });
 
   useEffect(() => {
-    // Allow guests to view local progress; no redirect
-    loadDashboardData();
-    const loadDocs = async () => {
+    // Load drafts from Firestore (for logged-in users) or localStorage (for guests)
+    const loadAll = async () => {
+      await loadDashboardData();
+      
+      // Load uploaded documents
       if (!user) {
         setUploadedDocs([]);
-        return;
+      } else {
+        try {
+          const profile = await getUserProfile(user.uid);
+          const files = profile?.uploadedFiles || {};
+          const list: Array<{ key: string; fileName: string; fileUrl: string; fileSize: number; uploadedAt: string; quality?: string }> = Object.entries(files).map(([key, meta]) => ({
+            key,
+            fileName: meta.fileName,
+            fileUrl: meta.fileUrl,
+            fileSize: meta.fileSize,
+            uploadedAt: meta.uploadDate,
+            quality: meta.aiVerification?.quality,
+          }));
+          setUploadedDocs(list);
+        } catch (e) {
+          console.warn('Failed to load uploaded documents', e);
+        }
       }
-      try {
-        const profile = await getUserProfile(user.uid);
-        const files = profile?.uploadedFiles || {};
-        const list: Array<{ key: string; fileName: string; fileUrl: string; fileSize: number; uploadedAt: string; quality?: string }> = Object.entries(files).map(([key, meta]) => ({
-          key,
-          fileName: meta.fileName,
-          fileUrl: meta.fileUrl,
-          fileSize: meta.fileSize,
-          uploadedAt: meta.uploadDate,
-          quality: meta.aiVerification?.quality,
-        }));
-        setUploadedDocs(list);
-      } catch (e) {
-        console.warn('Failed to load uploaded documents', e);
+      
+      // Load submissions
+      if (!user) {
+        // Demo: load local submissions
+        if (DEMO_MODE) {
+          try {
+            const subs: Array<SavedForm & { pdfUrl?: string }> = [] as Array<SavedForm & { pdfUrl?: string }>;
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (key && key.startsWith('form_submission_')) {
+                const raw = localStorage.getItem(key);
+                if (!raw) continue;
+                try {
+                  const parsed = JSON.parse(raw) as { id: string; formType: string; data: Record<string, unknown>; lastUpdated?: string };
+                  const demoItem = {
+                    id: parsed.id,
+                    userId: 'demo',
+                    formType: parsed.formType,
+                    data: parsed.data,
+                    status: 'submitted',
+                    // Provide plain Dates; normalizeTimestamp already handles Date
+                    timestamp: new Date(),
+                    lastUpdated: new Date(parsed.lastUpdated || Date.now()),
+                    pdfUrl: typeof parsed.data?.pdfUrl === 'string' ? (parsed.data.pdfUrl as string) : undefined,
+                  } as unknown as SavedForm & { pdfUrl?: string };
+                  subs.push(demoItem);
+                } catch {/* ignore */}
+              }
+            }
+            setSubmissions(subs);
+          } catch {
+            setSubmissions([]);
+          }
+        } else {
+          setSubmissions([]);
+        }
+      } else {
+        try {
+          const forms = await getUserForms(user.uid);
+          const submitted = forms.filter(f => f.status === 'submitted');
+          // Extract pdfUrl if nested in data (typing guard)
+          const mapped = submitted.map((f) => {
+            const d = (f.data || {}) as Record<string, unknown>;
+            const pdfUrl = typeof d.pdfUrl === 'string' ? d.pdfUrl : undefined;
+            return { ...f, pdfUrl };
+          });
+          setSubmissions(mapped);
+        } catch (e) {
+          console.warn('Failed to load submissions', e);
+        }
       }
     };
-    loadDocs();
-    const loadSubmissions = async () => {
-      if (!user) { setSubmissions([]); return; }
-      try {
-        const forms = await getUserForms(user.uid);
-        const submitted = forms.filter(f => f.status === 'submitted');
-        // Extract pdfUrl if nested in data (typing guard)
-        const mapped = submitted.map((f) => {
-          const d = (f.data || {}) as Record<string, unknown>;
-          const pdfUrl = typeof d.pdfUrl === 'string' ? d.pdfUrl : undefined;
-          return { ...f, pdfUrl };
-        });
-        setSubmissions(mapped);
-      } catch (e) {
-        console.warn('Failed to load submissions', e);
-      }
-    };
-    loadSubmissions();
+    
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleSignOut = async () => {
@@ -182,8 +222,39 @@ const FormProgressDashboard = () => {
     }
   };
 
-  const loadDashboardData = () => {
+  const loadDashboardData = useCallback(async () => {
     const allDrafts: FormDraft[] = [];
+    
+    // Load from Firestore for logged-in users
+    if (user) {
+      try {
+        const forms = await getUserForms(user.uid);
+        const draftForms = forms.filter(f => f.status === 'draft');
+        
+        draftForms.forEach((form) => {
+          const formData = (form.data || {}) as Record<string, unknown>;
+          const fieldsCompleted = Object.values(formData).filter(
+            (v) => v !== "" && v !== null && v !== undefined
+          ).length;
+          const totalFields = Object.keys(formData).length || 1;
+          
+          allDrafts.push({
+            id: form.id || '',
+            formId: form.id || '',
+            formName: form.formType || 'Untitled Form',
+            progress: Math.round((fieldsCompleted / totalFields) * 100),
+            lastModified: normalizeTimestamp(form.lastUpdated),
+            fieldsCompleted,
+            totalFields,
+          });
+        });
+      } catch (error) {
+        console.error("Error loading drafts from Firestore:", error);
+        toast.error("Failed to load saved forms");
+      }
+    }
+    
+    // Fallback: Also check localStorage for any local drafts (for guests or offline work)
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith("form_draft_")) {
@@ -214,13 +285,24 @@ const FormProgressDashboard = () => {
 
     setDrafts(allDrafts);
     setIsLoading(false);
-  };
+  }, [user]);
 
-  const handleDeleteDraft = (draftId: string, e: React.MouseEvent) => {
+  const handleDeleteDraft = async (draftId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    localStorage.removeItem(draftId);
-    setDrafts(drafts.filter(d => d.id !== draftId));
-    toast.success("Draft deleted");
+    try {
+      if (draftId.startsWith("form_draft_")) {
+        // Local-only draft
+        localStorage.removeItem(draftId);
+      } else if (user) {
+        // Firestore-backed draft
+        await deleteForm(draftId);
+      }
+      setDrafts(prev => prev.filter(d => d.id !== draftId));
+      toast.success("Draft deleted");
+    } catch (err) {
+      console.error('Failed to delete draft', err);
+      toast.error('Failed to delete draft');
+    }
   };
 
   // Simple field extraction from OCR text
@@ -505,11 +587,11 @@ const FormProgressDashboard = () => {
               <span className="hidden sm:inline">Autofill</span>
               <span className="sm:hidden">Setup</span>
             </TabsTrigger>
-            <TabsTrigger value="submissions" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5" disabled={!user}>
+            <TabsTrigger value="submissions" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5" disabled={!user && !DEMO_MODE}>
               <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Submitted</span>
             </TabsTrigger>
-            <TabsTrigger value="documents" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5" disabled={!user}>
+            <TabsTrigger value="documents" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5" disabled={!user && !DEMO_MODE}>
               <Folders className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">My</span> Docs
             </TabsTrigger>

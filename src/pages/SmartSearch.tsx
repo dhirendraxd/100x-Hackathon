@@ -399,10 +399,10 @@ export default function SmartSearch() {
 
         {/* All Forms */}
         <div className="space-y-4 sm:space-y-6">
-          {nepalGovForms.map((form) => {
+      {nepalGovForms.map((form) => {
               const nearestOffice = findNearestOffice(form);
               return (
-                <Card key={form.id} className="hover:shadow-lg transition-shadow">
+        <Card key={form.id} className="bg-card/50 backdrop-blur border-white/10 hover:border-primary/50 transition-all hover:shadow-glow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
