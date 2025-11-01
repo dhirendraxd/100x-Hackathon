@@ -495,7 +495,7 @@ const FormProgressDashboard = () => {
         )}
 
         <Tabs defaultValue="pending" className="space-y-4 sm:space-y-6">
-          <TabsList className="bg-card/50 backdrop-blur border border-white/10 w-full grid grid-cols-3 gap-1 h-auto p-1">
+          <TabsList className="bg-card/50 backdrop-blur border border-white/10 w-full grid grid-cols-4 gap-1 h-auto p-1">
             <TabsTrigger value="pending" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
               <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Pending</span> ({drafts.length})
@@ -504,6 +504,10 @@ const FormProgressDashboard = () => {
               <Info className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Autofill</span>
               <span className="sm:hidden">Setup</span>
+            </TabsTrigger>
+            <TabsTrigger value="submissions" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5" disabled={!user}>
+              <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Submitted</span>
             </TabsTrigger>
             <TabsTrigger value="documents" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5" disabled={!user}>
               <Folders className="h-3 w-3 sm:h-4 sm:w-4" />
