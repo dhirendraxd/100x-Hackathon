@@ -42,9 +42,10 @@ const demoConfig: FirebaseOptions = {
 
 // Fail-fast in production if config is missing to avoid 127.0.0.1 auth redirects in prod
 if (!hasConfig && !isLocalHost) {
-  throw new Error(
-    'Firebase config missing in production. Set VITE_FIREBASE_* env vars and add your domain to Firebase Auth Authorized domains.'
+  console.error(
+    '🚨 Firebase config missing in production. Set VITE_FIREBASE_* env vars in Vercel and add your domain to Firebase Auth Authorized domains.'
   );
+  // Don't throw - let the app render with a fallback so we can show a friendly error
 }
 
 const app = initializeApp(hasConfig ? firebaseConfig : demoConfig);

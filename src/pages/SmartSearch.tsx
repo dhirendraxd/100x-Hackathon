@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { validateDocumentEnhanced, formatFileSize, type EnhancedValidationResult } from '@/services/documentValidation';
 import { nepalGovForms, type GovForm } from '@/data/nepalGovForms';
 import { saveUploadedFile } from '@/services/userProfileService';
+import { useTranslation } from 'react-i18next';
 
 interface AIInsight {
   status: 'processing' | 'complete';
@@ -29,6 +30,7 @@ interface UploadedFile {
 }
 
 export default function SmartSearch() {
+  const { t } = useTranslation('common');
   const { user } = useAuthContext();
   const [userLocation, setUserLocation] = useState<{ city: string; district: string; province: string } | null>(null);
   const [uploadedDocs, setUploadedDocs] = useState<Record<string, UploadedFile[]>>({});
@@ -356,15 +358,15 @@ export default function SmartSearch() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold">Government Forms</h1>
+            <h1 className="text-3xl font-bold">{t('pages.smart.header', { defaultValue: 'Government Forms' })}</h1>
             <Button asChild variant="outline" size="sm">
               <Link to="/">
                 <Home className="h-4 w-4 mr-2" />
-                Home
+                {t('nav.home')}
               </Link>
             </Button>
           </div>
-          <p className="text-muted-foreground text-center">सरकारी फारमहरू</p>
+          <p className="text-muted-foreground text-center">{t('pages.smart.subheader', { defaultValue: 'सरकारी फारमहरू' })}</p>
         </div>
 
         {/* Location Info */}
@@ -372,7 +374,7 @@ export default function SmartSearch() {
           <Alert className="mb-6 border-primary/20 bg-primary/5">
             <MapPin className="h-4 w-4 text-primary" />
             <AlertDescription>
-              Showing offices near <strong>{userLocation.city}, {userLocation.district}</strong>
+              {t('pages.smart.showingOfficesNear', { defaultValue: 'Showing offices near' })} <strong>{userLocation.city}, {userLocation.district}</strong>
             </AlertDescription>
           </Alert>
         )}
@@ -382,10 +384,10 @@ export default function SmartSearch() {
           <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
             <AlertCircle className="h-4 w-4 text-yellow-500" />
             <AlertDescription>
-              <strong>Note:</strong> Documents uploaded will only be saved temporarily. 
+              <strong>{t('pages.smart.note', { defaultValue: 'Note:' })}</strong> {t('pages.smart.tempSave', { defaultValue: 'Documents uploaded will only be saved temporarily.' })} 
               <Link to="/login" className="text-primary hover:underline font-medium ml-1">
-                Log in
-              </Link> to save your documents permanently.
+                {t('cta.login')}
+              </Link> {t('pages.smart.savePermanently', { defaultValue: 'to save your documents permanently.' })}
             </AlertDescription>
           </Alert>
         )}
@@ -432,7 +434,7 @@ export default function SmartSearch() {
                   <CardContent className="space-y-4">
                     {/* Required Documents */}
                     <div className="bg-muted/30 p-4 rounded-lg">
-                      <p className="font-semibold text-sm mb-2">Required Documents:</p>
+                      <p className="font-semibold text-sm mb-2">{t('pages.smart.requiredDocs', { defaultValue: 'Required Documents:' })}</p>
                       <ul className="text-sm text-muted-foreground space-y-1">
                         {form.requiredDocuments.map((doc, idx) => (
                           <li key={idx} className="flex items-start gap-2">
@@ -448,11 +450,11 @@ export default function SmartSearch() {
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium flex items-center gap-2">
                           <Upload className="h-4 w-4 text-primary" />
-                          Upload Documents
+                          {t('pages.smart.uploadDocuments', { defaultValue: 'Upload Documents' })}
                         </p>
                         {!user && (
                           <Badge variant="outline" className="text-xs text-amber-600 border-amber-600">
-                            Guest Mode
+                            {t('pages.smart.guestMode', { defaultValue: 'Guest Mode' })}
                           </Badge>
                         )}
                       </div>
@@ -466,14 +468,14 @@ export default function SmartSearch() {
                           onClick={() => setShowUploadFields(prev => ({ ...prev, [form.id]: true }))}
                         >
                           <Upload className="h-4 w-4 mr-2" />
-                          Choose Files to Upload
+                          {t('pages.smart.chooseFiles', { defaultValue: 'Choose Files to Upload' })}
                         </Button>
                       ) : (
                         <>
                           {/* Individual Document Upload Fields */}
                           <div className="space-y-3 pt-2">
                             <p className="text-xs text-muted-foreground font-medium">
-                              Upload required documents below:
+                              {t('pages.smart.uploadBelow', { defaultValue: 'Upload required documents below:' })}
                             </p>
                             {form.requiredDocuments.map((doc, docIdx) => (
                               <div key={docIdx} className="space-y-1.5">
@@ -502,7 +504,7 @@ export default function SmartSearch() {
                                     onClick={() => document.getElementById(`file-upload-${form.id}-${docIdx}`)?.click()}
                                   >
                                     <Upload className="h-3 w-3 mr-2" />
-                                    <span className="truncate">Choose File (PDF/JPG/PNG)</span>
+                                    <span className="truncate">{t('pages.smart.chooseFile', { defaultValue: 'Choose File (PDF/JPG/PNG)' })}</span>
                                   </Button>
                                 </div>
                               </div>
@@ -515,7 +517,7 @@ export default function SmartSearch() {
                       {uploadedDocs[form.id] && uploadedDocs[form.id].length > 0 && (
                         <div className="space-y-2 pt-2 border-t">
                           <p className="text-xs font-medium text-muted-foreground">
-                            Uploaded Files ({uploadedDocs[form.id].length}):
+                            {t('pages.smart.uploadedFiles', { defaultValue: 'Uploaded Files' })} ({uploadedDocs[form.id].length}):
                           </p>
                           {uploadedDocs[form.id].map((uploadedFile, idx) => (
                             <div key={idx} className="space-y-2">
@@ -525,7 +527,7 @@ export default function SmartSearch() {
                                   {uploadedFile.isValidating ? (
                                     <>
                                       <Brain className="h-4 w-4 text-primary animate-pulse flex-shrink-0" />
-                                      <span className="text-xs truncate">Analyzing...</span>
+                                      <span className="text-xs truncate">{t('pages.smart.analyzing', { defaultValue: 'Analyzing...' })}</span>
                                     </>
                                   ) : (
                                     <>
@@ -574,7 +576,7 @@ export default function SmartSearch() {
                                 }`}>
                                   <div className="flex items-center gap-2 font-semibold">
                                     <Sparkles className="h-3 w-3" />
-                                    <span>AI Analysis: {uploadedFile.aiInsight.documentType}</span>
+                                    <span>{t('pages.smart.aiAnalysis', { defaultValue: 'AI Analysis:' })} {uploadedFile.aiInsight.documentType}</span>
                                   </div>
                                   <div className="space-y-0.5 ml-5">
                                     {uploadedFile.aiInsight.suggestions.map((suggestion, sIdx) => (
@@ -628,7 +630,7 @@ export default function SmartSearch() {
                             disabled={!uploadedDocs[form.id] || uploadedDocs[form.id].length === 0 || uploadedDocs[form.id].some(f => f.isValidating)}
                           >
                             <CheckCircle className="h-4 w-4 mr-2" />
-                            Verify All Documents
+                            {t('pages.smart.verifyAll', { defaultValue: 'Verify All Documents' })}
                           </Button>
                           
                           {/* Save to Profile Button - Only for logged-in users */}
@@ -646,10 +648,10 @@ export default function SmartSearch() {
                             >
                               <Save className="h-4 w-4 mr-2" />
                               {uploadedDocs[form.id].every(f => f.savedToProfile) 
-                                ? 'Saved to Profile ✓' 
+                                ? t('pages.smart.savedToProfile', { defaultValue: 'Saved to Profile ✓' }) 
                                 : savingToProfile[form.id] 
-                                  ? 'Saving...' 
-                                  : 'Save to Profile for Autofill'}
+                                  ? t('pages.smart.saving', { defaultValue: 'Saving...' }) 
+                                  : t('pages.smart.saveToProfile', { defaultValue: 'Save to Profile for Autofill' })}
                             </Button>
                           )}
                         </div>
@@ -660,7 +662,7 @@ export default function SmartSearch() {
                     {form.nextSteps && form.nextSteps.length > 0 && (
                       <div className="bg-emerald-500/5 border border-emerald-500/20 p-4 rounded-lg">
                         <p className="font-semibold text-sm mb-2 text-emerald-700">
-                          After you fill the form (Next steps):
+                          {t('pages.smart.nextSteps', { defaultValue: 'After you fill the form (Next steps):' })}
                         </p>
                         <ol className="list-decimal ml-5 text-sm text-muted-foreground space-y-1">
                           {form.nextSteps.map((step, i) => (
@@ -676,7 +678,7 @@ export default function SmartSearch() {
                         <Navigation className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
                         <div className="flex-1">
                           <p className="font-semibold text-sm text-primary mb-1">
-                            Nearest Office ({nearestOffice.district}):
+                            {t('pages.smart.nearestOffice', { defaultValue: 'Nearest Office' })} ({nearestOffice.district}):
                           </p>
                           <p className="text-sm font-medium">{nearestOffice.address}</p>
                           <p className="text-sm text-muted-foreground">
@@ -705,12 +707,12 @@ export default function SmartSearch() {
                     <div className="flex gap-3">
                       <Button asChild className="flex-1">
                         <a href={form.formUrl} target="_blank" rel="noopener noreferrer">
-                          Open Official Portal
+                          {t('pages.smart.openPortal', { defaultValue: 'Open Official Portal' })}
                         </a>
                       </Button>
                       <Button asChild variant="outline">
                         <Link to={`/form-filler?service=${encodeURIComponent(form.name)}`}>
-                          Fill a Demo Form
+                          {t('pages.smart.fillDemo', { defaultValue: 'Fill a Demo Form' })}
                         </Link>
                       </Button>
                     </div>

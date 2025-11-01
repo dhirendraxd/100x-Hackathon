@@ -28,9 +28,11 @@ import {
   ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from 'react-i18next';
 
 const FormLibrary = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
   const [forms, setForms] = useState<GovernmentForm[]>([]);
   const [filteredForms, setFilteredForms] = useState<GovernmentForm[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -147,9 +149,9 @@ const FormLibrary = () => {
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Form Library</h1>
+          <h1 className="text-4xl font-bold text-white mb-4">{t('nav.formLibrary')}</h1>
           <p className="text-gray-300 text-lg">
-            Browse and explore digitized government forms
+            {t('pages.library.subtitle', { defaultValue: 'Browse and explore digitized government forms' })}
           </p>
         </div>
 
@@ -158,7 +160,7 @@ const FormLibrary = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5 text-primary" />
-              Search & Filter
+              {t('pages.library.searchFilter', { defaultValue: 'Search & Filter' })}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -167,7 +169,7 @@ const FormLibrary = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search forms..."
+                  placeholder={t('pages.library.searchPlaceholder', { defaultValue: 'Search forms...' })}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -177,10 +179,10 @@ const FormLibrary = () => {
               {/* Department Filter */}
               <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Departments" />
+                  <SelectValue placeholder={t('pages.library.allDepartments', { defaultValue: 'All Departments' })} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
+                  <SelectItem value="all">{t('pages.library.allDepartments', { defaultValue: 'All Departments' })}</SelectItem>
                   {departments.slice(1).map((dept) => (
                     <SelectItem key={dept} value={dept}>
                       {dept}
@@ -192,10 +194,10 @@ const FormLibrary = () => {
               {/* Difficulty Filter */}
               <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Levels" />
+                  <SelectValue placeholder={t('pages.library.allLevels', { defaultValue: 'All Levels' })} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="all">{t('pages.library.allLevels', { defaultValue: 'All Levels' })}</SelectItem>
                   {difficulties.slice(1).map((diff) => (
                     <SelectItem key={diff} value={diff}>
                       {diff.charAt(0).toUpperCase() + diff.slice(1)}
@@ -210,7 +212,7 @@ const FormLibrary = () => {
         {/* Results Count */}
         <div className="mb-4">
           <p className="text-gray-400 text-sm">
-            Showing {filteredForms.length} of {forms.length} forms
+            {t('pages.library.showingCount', { defaultValue: 'Showing {{count}} of {{total}} forms', count: filteredForms.length, total: forms.length })}
           </p>
         </div>
 
@@ -234,9 +236,9 @@ const FormLibrary = () => {
           <Card className="bg-card/50 backdrop-blur border-white/10">
             <CardContent className="py-12 text-center">
               <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No forms found</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">{t('pages.library.noForms', { defaultValue: 'No forms found' })}</h3>
               <p className="text-gray-400">
-                Try adjusting your search or filters
+                {t('pages.library.tryAdjust', { defaultValue: 'Try adjusting your search or filters' })}
               </p>
             </CardContent>
           </Card>
@@ -303,7 +305,7 @@ const FormLibrary = () => {
                     className="w-full group-hover:bg-primary group-hover:text-primary-foreground"
                     variant="outline"
                   >
-                    View Form
+                    {t('pages.library.viewForm', { defaultValue: 'View Form' })}
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 </CardContent>

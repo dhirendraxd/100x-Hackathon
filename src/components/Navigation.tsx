@@ -5,15 +5,23 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useAuthContext } from "@/contexts/AuthContext";
 import LocationDetector from "./LocationDetector";
+import { useTranslation } from 'react-i18next';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuthContext();
+  const { t, i18n } = useTranslation('common');
+  const currentLang = i18n.language.startsWith('ne') ? 'ne' : 'en';
+  const toggleLang = () => {
+    const next = currentLang === 'en' ? 'ne' : 'en';
+    i18n.changeLanguage(next);
+    try { localStorage.setItem('lang', next); } catch (e) { /* ignore */ }
+  };
 
   const navItems = [
-    { path: "/", label: "Home", icon: Home },
-    { path: "/form-library", label: "Form Library", icon: Library },
+    { path: "/", label: t('nav.home'), icon: Home },
+    { path: "/form-library", label: t('nav.formLibrary'), icon: Library },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -54,7 +62,7 @@ const Navigation = () => {
               <Link to="/form-progress">
                 <Button variant="outline" size="sm" className="gap-2">
                   <BarChart3 className="w-4 h-4" />
-                  My Progress
+                  {t('nav.myProgress')}
                 </Button>
               </Link>
             )}
@@ -65,11 +73,17 @@ const Navigation = () => {
                 <Link to="/signup">
                   <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
                     <User className="w-3.5 h-3.5" />
-                    <span className="text-xs">Join Now</span>
+                    <span className="text-xs">{t('nav.joinNow')}</span>
                   </Button>
                 </Link>
               </div>
             )}
+            {/* Language Switcher */}
+            <div className="flex items-center ml-4 pl-4 border-l border-border/50">
+              <Button variant="ghost" size="sm" onClick={toggleLang}>
+                {currentLang === 'en' ? t('language.nepali') : t('language.english')}
+              </Button>
+            </div>
 
             {/* Logged in user badge */}
             {user && (

@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthContext } from "@/contexts/AuthContext";
 import LocationDetector from "@/components/LocationDetector";
+import { useTranslation } from 'react-i18next';
 
 const Home = () => {
   const { user } = useAuthContext();
+  const { t } = useTranslation('common');
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -23,21 +25,20 @@ const Home = () => {
             <div className="text-left z-10 space-y-8">
               <div className="animate-fade-in">
                 <span className="inline-block px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-foreground/80 text-xs font-medium backdrop-blur-sm">
-                  Your Smart Form Assistant • Mitra Smart
+                  {t('hero.badge')}
                 </span>
               </div>
               
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight animate-fade-in">
-                <span className="text-white">Simplify Your </span>
+                <span className="text-white">{t('hero.titleLine1')} </span>
                 <br />
-                <span className="gradient-text-green">Nepal Government</span>
+                <span className="gradient-text-green">{t('hero.titleLine2')}</span>
                 <br />
-                <span className="gradient-text-green">Form Journey</span>
+                <span className="gradient-text-green">{t('hero.titleLine3')}</span>
               </h1>
               
               <p className="text-base md:text-[17px] text-gray-400 max-w-xl animate-fade-in leading-relaxed">
-                Digitize, understand, and fill Nepal government forms with ease. 
-                From passport applications to citizenship forms — all in one place.
+                {t('hero.desc')}
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 animate-fade-in">
@@ -45,13 +46,13 @@ const Home = () => {
                   <>
                     <Link to="/form-library">
                       <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
-                        FORM LIBRARY
+                        {t('hero.formLibrary')}
                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </Link>
                     <Link to="/form-scraper">
                       <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                        SCRAPE FORM
+                        {t('hero.scrapeForm')}
                         <Upload className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -60,13 +61,13 @@ const Home = () => {
                   <>
                     <Link to="/search">
                       <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
-                        GET STARTED
+                        {t('hero.getStarted')}
                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </Link>
                     <Link to="/form-library">
                       <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                        BROWSE FORMS
+                        {t('hero.browseForms')}
                         <FileText className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -106,11 +107,11 @@ const Home = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-2xl md:text-4xl font-bold mb-4">
-              <span className="gradient-text-green">Why Choose</span>{" "}
-              <span className="text-white">Form Mitra Smart?</span>
+              <span className="gradient-text-green">{t('why.title1')}</span>{" "}
+              <span className="text-white">{t('why.title2')}</span>
             </h2>
             <p className="text-lg text-gray-400">
-              Cutting-edge technology meets user-friendly design
+              {t('why.subtitle')}
             </p>
           </div>
 
@@ -120,10 +121,8 @@ const Home = () => {
                 <div className="mb-5 inline-flex p-3.5 rounded-xl bg-white/5 backdrop-blur-sm group-hover:bg-white/10 transition-colors">
                   <CheckCircle2 className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-white">Nepal Government Forms</h3>
-                <p className="text-gray-400 leading-relaxed text-sm">
-                  Access passport, citizenship, PAN card, and other official Nepal government forms.
-                </p>
+                <h3 className="text-lg font-semibold mb-2 text-white">{t('why.card1Title')}</h3>
+                <p className="text-gray-400 leading-relaxed text-sm">{t('why.card1Desc')}</p>
               </CardContent>
             </Card>
 
@@ -132,10 +131,8 @@ const Home = () => {
                 <div className="mb-5 inline-flex p-3.5 rounded-xl bg-white/5 backdrop-blur-sm group-hover:bg-white/10 transition-colors">
                   <Zap className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-white">Simplified Forms</h3>
-                <p className="text-gray-400 leading-relaxed text-sm">
-                  User-friendly forms with Nepali language support, helpful hints, and examples.
-                </p>
+                <h3 className="text-lg font-semibold mb-2 text-white">{t('why.card2Title')}</h3>
+                <p className="text-gray-400 leading-relaxed text-sm">{t('why.card2Desc')}</p>
               </CardContent>
             </Card>
 
@@ -144,10 +141,8 @@ const Home = () => {
                 <div className="mb-5 inline-flex p-3.5 rounded-xl bg-white/5 backdrop-blur-sm group-hover:bg-white/10 transition-colors">
                   <Clock className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-white">Save Time</h3>
-                <p className="text-gray-400 leading-relaxed text-sm">
-                  Complete government paperwork faster with step-by-step guidance.
-                </p>
+                <h3 className="text-lg font-semibold mb-2 text-white">{t('why.card3Title')}</h3>
+                <p className="text-gray-400 leading-relaxed text-sm">{t('why.card3Desc')}</p>
               </CardContent>
             </Card>
           </div>
@@ -158,11 +153,11 @@ const Home = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-2xl md:text-4xl font-bold mb-4">
-              <span className="text-white">How It</span>{" "}
-              <span className="gradient-text-green">Works</span>
+              <span className="text-white">{t('works.title1')}</span>{" "}
+              <span className="gradient-text-green">{t('works.title2')}</span>
             </h2>
             <p className="text-lg text-gray-400">
-              Three simple steps to complete your forms
+              {t('works.subtitle')}
             </p>
           </div>
 
@@ -172,10 +167,8 @@ const Home = () => {
                 <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 backdrop-blur-sm flex items-center justify-center text-2xl font-bold text-primary group-hover:bg-primary/20 transition-colors">
                   1
                 </div>
-                <h3 className="text-lg font-bold text-white">Browse Forms</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">
-                  Find the Nepal government form you need from our library.
-                </p>
+                <h3 className="text-lg font-bold text-white">{t('works.step1Title')}</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">{t('works.step1Desc')}</p>
               </CardContent>
             </Card>
 
@@ -184,10 +177,8 @@ const Home = () => {
                 <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 backdrop-blur-sm flex items-center justify-center text-2xl font-bold text-primary group-hover:bg-primary/20 transition-colors">
                   2
                 </div>
-                <h3 className="text-lg font-bold text-white">Fill Step-by-Step</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">
-                  Complete forms with helpful hints and examples in Nepali and English.
-                </p>
+                <h3 className="text-lg font-bold text-white">{t('works.step2Title')}</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">{t('works.step2Desc')}</p>
               </CardContent>
             </Card>
 
@@ -196,10 +187,8 @@ const Home = () => {
                 <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 backdrop-blur-sm flex items-center justify-center text-2xl font-bold text-primary group-hover:bg-primary/20 transition-colors">
                   3
                 </div>
-                <h3 className="text-lg font-bold text-white">Track Progress</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">
-                  Save drafts and continue anytime — all forms saved locally.
-                </p>
+                <h3 className="text-lg font-bold text-white">{t('works.step3Title')}</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">{t('works.step3Desc')}</p>
               </CardContent>
             </Card>
           </div>
@@ -211,23 +200,23 @@ const Home = () => {
           <Card className="border border-white/10 bg-black/10 backdrop-blur-xl">
             <CardContent className="p-10 text-center space-y-6">
               <h2 className="text-3xl md:text-4xl font-bold">
-                <span className="gradient-text-green">Ready to Get Started?</span>
+                <span className="gradient-text-green">{t('cta.ready')}</span>
               </h2>
               <p className="text-base md:text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto">
-                {user ? 'Access your form tools instantly.' : 'Create an account to start managing government forms easily.'}
+                {user ? t('cta.authedDesc') : t('cta.guestDesc')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
                 {user ? (
                   <>
                     <Link to="/form-library">
                       <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
-                        Browse Forms
+                        {t('cta.browse')}
                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </Link>
                     <Link to="/form-scraper">
                       <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                        Scrape New Form
+                        {t('cta.scrape')}
                         <Upload className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -236,13 +225,13 @@ const Home = () => {
                   <>
                     <Link to="/login">
                       <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
-                        Login
+                        {t('cta.login')}
                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </Link>
                     <Link to="/signup">
                       <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                        Sign Up
+                        {t('cta.signup')}
                       </Button>
                     </Link>
                   </>
