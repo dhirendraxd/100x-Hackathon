@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Save, Download, RotateCcw, ChevronRight, AlertCircle, Sparkles } from "lucide-react";
+import { Save, Download, RotateCcw, ChevronRight, AlertCircle, Sparkles, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,13 +14,16 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ParticleBackground from "@/components/ParticleBackground";
+import FieldWithHint from "@/components/FieldWithHint";
 import { toast } from "sonner";
 import { saveFormDraft } from "@/services/formService";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { getAutofillData, type AutofillData } from "@/services/userProfileService";
+import { getProgressMessage } from "@/services/fieldHintService";
 
 type FormData = {
   service: string;
@@ -100,6 +103,7 @@ const FormFiller = () => {
   const { user } = useAuthContext();
   const [autofillAvailable, setAutofillAvailable] = useState(false);
   const [autofillData, setAutofillData] = useState<AutofillData | null>(null);
+  const [showHints, setShowHints] = useState(true); // Toggle for smart hints
   const [formData, setFormData] = useState<FormData>({
     service: "",
     fullName: "",
@@ -576,6 +580,22 @@ const FormFiller = () => {
             <p className="text-lg text-muted-foreground">
               Fill a simplified demo form similar to the official one
             </p>
+            
+            {/* Hints toggle */}
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button
+                variant={showHints ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowHints(!showHints)}
+                className="gap-2"
+              >
+                <Lightbulb className="h-4 w-4" />
+                {showHints ? 'Smart Hints: ON' : 'Smart Hints: OFF'}
+              </Button>
+              <Badge variant="outline" className="text-xs">
+                AI-Powered Guidance
+              </Badge>
+            </div>
           </div>
 
           {/* Notification shortcuts (visible when we can email) */}
@@ -623,6 +643,15 @@ const FormFiller = () => {
                 <span>{Math.round(progress)}% Complete</span>
               </div>
               <Progress value={progress} className="h-2" />
+              
+              {/* Progress encouragement message */}
+              {showHints && (
+                <div className="mt-3 text-center">
+                  <p className="text-sm text-primary animate-in fade-in slide-in-from-top-1 duration-300">
+                    {getProgressMessage(progress)}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -670,24 +699,26 @@ const FormFiller = () => {
                   {/* Personal Details */}
                   <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
                     <h3 className="font-semibold text-lg">Personal Details</h3>
-                    <div className="space-y-2">
-                      <Label>Full Name</Label>
-                      <Input
-                        value={formData.fullName}
-                        onChange={(e) => handleInputChange("fullName", e.target.value)}
-                        placeholder="Enter your full name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Date of Birth</Label>
-                      <Input
-                        type="date"
-                        value={formData.dateOfBirth}
-                        onChange={(e) =>
-                          handleInputChange("dateOfBirth", e.target.value)
-                        }
-                      />
-                    </div>
+                    
+                    <FieldWithHint
+                      id="fullName"
+                      label="Full Name"
+                      value={formData.fullName}
+                      onChange={(value) => handleInputChange("fullName", value)}
+                      required
+                      showHints={showHints}
+                    />
+                    
+                    <FieldWithHint
+                      id="dateOfBirth"
+                      label="Date of Birth"
+                      type="date"
+                      value={formData.dateOfBirth}
+                      onChange={(value) => handleInputChange("dateOfBirth", value)}
+                      required
+                      showHints={showHints}
+                    />
+                    
                     <div className="space-y-2">
                       <Label>Gender</Label>
                       <Select
@@ -709,23 +740,24 @@ const FormFiller = () => {
                   {/* NID Identification Details */}
                   <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
                     <h3 className="font-semibold text-lg">NID Identification Details</h3>
-                    <div className="space-y-2">
-                      <Label>National Identity Number (NIN)</Label>
-                      <Input
-                        value={nidDetails.nin}
-                        onChange={(e) => handleNidChange("nin", e.target.value)}
-                        placeholder="Enter NIN (if available)"
-                      />
-                    </div>
+                    
+                    <FieldWithHint
+                      id="nin"
+                      label="National Identity Number (NIN)"
+                      value={nidDetails.nin}
+                      onChange={(value) => handleNidChange("nin", value)}
+                      showHints={showHints}
+                    />
+                    
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label>First Name (पहिलो नाम)</Label>
-                        <Input
-                          value={nidDetails.firstName}
-                          onChange={(e) => handleNidChange("firstName", e.target.value)}
-                          placeholder="Ram / राम"
-                        />
-                      </div>
+                      <FieldWithHint
+                        id="firstName"
+                        label="First Name (पहिलो नाम)"
+                        value={nidDetails.firstName}
+                        onChange={(value) => handleNidChange("firstName", value)}
+                        required
+                        showHints={showHints}
+                      />
                       <div className="space-y-2">
                         <Label>Middle Name (बीचको नाम)</Label>
                         <Input
@@ -734,58 +766,60 @@ const FormFiller = () => {
                           placeholder="Bahadur / बहादुर"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label>Last Name (थर)</Label>
-                        <Input
-                          value={nidDetails.lastName}
-                          onChange={(e) => handleNidChange("lastName", e.target.value)}
-                          placeholder="Sharma / शर्मा"
-                        />
-                      </div>
+                      <FieldWithHint
+                        id="lastName"
+                        label="Last Name (थर)"
+                        value={nidDetails.lastName}
+                        onChange={(value) => handleNidChange("lastName", value)}
+                        required
+                        showHints={showHints}
+                      />
                     </div>
+                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Date of Birth (B.S.)</Label>
-                        <Input
-                          type="date"
-                          value={nidDetails.dobBS}
-                          onChange={(e) => handleNidChange("dobBS", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Date of Birth (A.D.)</Label>
-                        <Input
-                          type="date"
-                          value={nidDetails.dobAD}
-                          onChange={(e) => handleNidChange("dobAD", e.target.value)}
-                        />
-                      </div>
+                      <FieldWithHint
+                        id="dobBS"
+                        label="Date of Birth (B.S.)"
+                        type="date"
+                        value={nidDetails.dobBS}
+                        onChange={(value) => handleNidChange("dobBS", value)}
+                        showHints={showHints}
+                      />
+                      <FieldWithHint
+                        id="dobAD"
+                        label="Date of Birth (A.D.)"
+                        type="date"
+                        value={nidDetails.dobAD}
+                        onChange={(value) => handleNidChange("dobAD", value)}
+                        required
+                        showHints={showHints}
+                      />
                     </div>
+                    
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label>Citizenship Certificate No.</Label>
-                        <Input
-                          value={nidDetails.citizenshipNo}
-                          onChange={(e) => handleNidChange("citizenshipNo", e.target.value)}
-                          placeholder="e.g., 123-456-789"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Issue Date</Label>
-                        <Input
-                          type="date"
-                          value={nidDetails.citizenshipIssueDate}
-                          onChange={(e) => handleNidChange("citizenshipIssueDate", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Issue District</Label>
-                        <Input
-                          value={nidDetails.citizenshipIssueDistrict}
-                          onChange={(e) => handleNidChange("citizenshipIssueDistrict", e.target.value)}
-                          placeholder="Kathmandu"
-                        />
-                      </div>
+                      <FieldWithHint
+                        id="citizenshipNo"
+                        label="Citizenship Certificate No."
+                        value={nidDetails.citizenshipNo}
+                        onChange={(value) => handleNidChange("citizenshipNo", value)}
+                        required
+                        showHints={showHints}
+                      />
+                      <FieldWithHint
+                        id="citizenshipIssueDate"
+                        label="Issue Date"
+                        type="date"
+                        value={nidDetails.citizenshipIssueDate}
+                        onChange={(value) => handleNidChange("citizenshipIssueDate", value)}
+                        showHints={showHints}
+                      />
+                      <FieldWithHint
+                        id="citizenshipIssueDistrict"
+                        label="Issue District"
+                        value={nidDetails.citizenshipIssueDistrict}
+                        onChange={(value) => handleNidChange("citizenshipIssueDistrict", value)}
+                        showHints={showHints}
+                      />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -899,32 +933,35 @@ const FormFiller = () => {
                   {/* Contact Information */}
                   <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
                     <h3 className="font-semibold text-lg">Contact Information</h3>
-                    <div className="space-y-2">
-                      <Label>Email Address</Label>
-                      <Input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        placeholder="your.email@example.com"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Phone Number</Label>
-                      <Input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
-                        placeholder="+91 XXXXX XXXXX"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Address</Label>
-                      <Input
-                        value={formData.address}
-                        onChange={(e) => handleInputChange("address", e.target.value)}
-                        placeholder="House No, Street, Area"
-                      />
-                    </div>
+                    
+                    <FieldWithHint
+                      id="email"
+                      label="Email Address"
+                      type="email"
+                      value={formData.email}
+                      onChange={(value) => handleInputChange("email", value)}
+                      required
+                      showHints={showHints}
+                    />
+                    
+                    <FieldWithHint
+                      id="phone"
+                      label="Phone Number"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(value) => handleInputChange("phone", value)}
+                      required
+                      showHints={showHints}
+                    />
+                    
+                    <FieldWithHint
+                      id="address"
+                      label="Address"
+                      value={formData.address}
+                      onChange={(value) => handleInputChange("address", value)}
+                      showHints={showHints}
+                    />
+                    
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>City</Label>
@@ -1071,26 +1108,22 @@ const FormFiller = () => {
                   {/* Family Details */}
                   <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
                     <h3 className="font-semibold text-lg">Family Details</h3>
-                    <div className="space-y-2">
-                      <Label>Father's Name</Label>
-                      <Input
-                        value={formData.fatherName}
-                        onChange={(e) =>
-                          handleInputChange("fatherName", e.target.value)
-                        }
-                        placeholder="Enter father's full name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Mother's Name</Label>
-                      <Input
-                        value={formData.motherName}
-                        onChange={(e) =>
-                          handleInputChange("motherName", e.target.value)
-                        }
-                        placeholder="Enter mother's full name"
-                      />
-                    </div>
+                    
+                    <FieldWithHint
+                      id="fatherName"
+                      label="Father's Name"
+                      value={formData.fatherName}
+                      onChange={(value) => handleInputChange("fatherName", value)}
+                      showHints={showHints}
+                    />
+                    
+                    <FieldWithHint
+                      id="motherName"
+                      label="Mother's Name"
+                      value={formData.motherName}
+                      onChange={(value) => handleInputChange("motherName", value)}
+                      showHints={showHints}
+                    />
                   </div>
 
                   {/* Form Summary */}

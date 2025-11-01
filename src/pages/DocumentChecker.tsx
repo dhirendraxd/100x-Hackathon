@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Upload, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Upload, CheckCircle2, XCircle, AlertCircle, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ParticleBackground from "@/components/ParticleBackground";
@@ -18,6 +19,7 @@ import { httpsCallable } from "firebase/functions";
 import { functions } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { getUserProfile, type UserProfile } from "@/services/userProfileService";
 
 type ValidationResult = {
   check: string;
@@ -31,14 +33,53 @@ const DocumentChecker = () => {
   const [results, setResults] = useState<ValidationResult[]>([]);
   const [isChecking, setIsChecking] = useState(false);
   const { user } = useAuthContext();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
-  const documentTypes = [
+  // Document types available for checking
+  const allDocumentTypes = [
     "Passport Photo",
     "PAN Card Photo",
     "Signature",
     "Address Proof",
     "ID Proof",
   ];
+
+  // Load user profile when component mounts or user changes
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (user) {
+        setLoadingProfile(true);
+        try {
+          const profile = await getUserProfile(user.uid);
+          setUserProfile(profile);
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+        } finally {
+          setLoadingProfile(false);
+        }
+      } else {
+        setUserProfile(null);
+      }
+    };
+
+    loadUserProfile();
+  }, [user]);
+
+  // Filter document types based on user's uploaded files
+  const getAvailableDocumentTypes = () => {
+    if (!user || !userProfile?.uploadedFiles) {
+      // Guest users see all document types
+      return allDocumentTypes;
+    }
+
+    // For logged-in users, filter out documents they've already uploaded
+    const uploadedDocTypes = Object.keys(userProfile.uploadedFiles);
+    return allDocumentTypes.filter(type => !uploadedDocTypes.includes(type));
+  };
+
+  const availableDocumentTypes = getAvailableDocumentTypes();
+  const hasUploadedDocuments = user && userProfile?.uploadedFiles && Object.keys(userProfile.uploadedFiles).length > 0;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -198,32 +239,95 @@ const DocumentChecker = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Info for logged-in users about their uploaded documents */}
+          {user && hasUploadedDocuments && (
+            <Card className="mb-6 border-green-500/50 bg-green-500/10">
+              <CardContent className="py-4">
+                <div className="flex items-start gap-3">
+                  <FileCheck className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground mb-2">
+                      Documents Already in Your Profile
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(userProfile?.uploadedFiles || {}).map(([docType, fileInfo]) => (
+                        <Badge key={docType} variant="outline" className="bg-green-500/10 border-green-500/30 text-green-400">
+                          ✓ {docType}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      These documents are already saved. You only need to upload new or missing documents.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* All documents uploaded - show success message */}
+          {user && availableDocumentTypes.length === 0 && (
+            <Card className="mb-6 border-blue-500/50 bg-blue-500/10">
+              <CardContent className="py-6 text-center">
+                <FileCheck className="w-12 h-12 text-blue-500 mx-auto mb-3" />
+                <p className="text-lg font-semibold text-foreground mb-2">
+                  All Documents Verified! 🎉
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  You have uploaded and verified all required documents. You can view them in your profile or proceed to fill forms.
+                </p>
+                <div className="flex justify-center gap-3 mt-4">
+                  <Button variant="outline" onClick={() => window.location.href = '/form-progress'}>
+                    View Profile
+                  </Button>
+                  <Button onClick={() => window.location.href = '/form-filler'}>
+                    Fill Forms
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           
           <div className="text-center space-y-4 mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground">
               Document Checker
             </h1>
             <p className="text-lg text-muted-foreground">
-              Upload your documents to verify they meet official requirements
+              {user 
+                ? availableDocumentTypes.length > 0
+                  ? `Upload and verify ${availableDocumentTypes.length} remaining document${availableDocumentTypes.length > 1 ? 's' : ''}`
+                  : 'All your documents are verified!'
+                : 'Upload your documents to verify they meet official requirements'
+              }
             </p>
           </div>
 
+          {/* Only show upload form if there are documents to upload */}
+          {(availableDocumentTypes.length > 0 || !user) && (
           <Card className="bg-gradient-card border-border shadow-card">
             <CardHeader>
-              <CardTitle className="text-2xl">Upload & Validate</CardTitle>
+              <CardTitle className="text-2xl">
+                {user ? 'Upload Missing Documents' : 'Upload & Validate'}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Document Type Selector */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
                   Document Type
+                  {user && availableDocumentTypes.length < allDocumentTypes.length && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      (Only showing documents not in your profile)
+                    </span>
+                  )}
                 </label>
                 <Select value={documentType} onValueChange={setDocumentType}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select document type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {documentTypes.map((type) => (
+                    {availableDocumentTypes.map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
                       </SelectItem>
@@ -333,6 +437,7 @@ const DocumentChecker = () => {
               )}
             </CardContent>
           </Card>
+          )}
         </div>
       </div>
       <Footer />

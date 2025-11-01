@@ -26,21 +26,27 @@ dist-ssr
 *.sw?
 
 # Documentation and setup files (avoid pushing these)
-AI_IMPLEMENTATION.md
-AI_SETUP_COMPLETE.md
-FEATURE_STATUS.md
-FORM_SCRAPER_WORKING.md
-MIGRATION_COMPLETE.md
-MOCK_DATA_MODE.md
-QUICK_START.md
-BUGFIXES.md
-CLEANUP_SUMMARY.md
-NID_FORM_ADDED.md
-*_SETUP*.md
-*_STATUS.md
-*_COMPLETE.md
-*_WORKING.md
-*_SUMMARY.md
+# Ignore all .md files except README.md
+*.md
+!README.md
+!README.MD
+
+# Legacy specific exclusions (now covered by *.md above)
+# AI_IMPLEMENTATION.md
+# AI_SETUP_COMPLETE.md
+# FEATURE_STATUS.md
+# FORM_SCRAPER_WORKING.md
+# MIGRATION_COMPLETE.md
+# MOCK_DATA_MODE.md
+# QUICK_START.md
+# BUGFIXES.md
+# CLEANUP_SUMMARY.md
+# NID_FORM_ADDED.md
+# *_SETUP*.md
+# *_STATUS.md
+# *_COMPLETE.md
+# *_WORKING.md
+# *_SUMMARY.md
 docs/
 
 # Test and example files
