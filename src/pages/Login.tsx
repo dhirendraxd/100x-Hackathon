@@ -16,10 +16,10 @@ const Login = () => {
   const { user, signIn, signInWithGoogle } = useAuthContext();
   const navigate = useNavigate();
 
-  // If user is already authenticated (e.g., after Google redirect), navigate to SmartSearch
+  // If user is already authenticated (e.g., after Google redirect), navigate to home
   useEffect(() => {
     if (user) {
-      navigate('/search');
+      navigate('/');
     }
   }, [user, navigate]);
 
@@ -47,7 +47,7 @@ const Login = () => {
       toast.error(error);
     } else if (user) {
       toast.success('Welcome back!');
-      navigate('/search');
+      navigate('/');
     }
   };
 
@@ -60,7 +60,7 @@ const Login = () => {
       toast.error(error);
     } else if (user) {
       toast.success('Welcome!');
-      navigate('/search');
+      navigate('/');
     }
   };
 

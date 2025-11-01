@@ -42,37 +42,18 @@ const Home = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 animate-fade-in">
-                {user ? (
-                  <>
-                    <Link to="/form-library">
-                      <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
-                        {t('hero.formLibrary')}
-                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                    <Link to="/form-scraper">
-                      <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                        {t('hero.scrapeForm')}
-                        <Upload className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/search">
-                      <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
-                        {t('hero.getStarted')}
-                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                    <Link to="/form-library">
-                      <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                        {t('hero.browseForms')}
-                        <FileText className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </>
-                )}
+                <Link to="/search">
+                  <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
+                    {t('hero.getStarted')}
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+                <Link to="/form-library">
+                  <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
+                    {t('hero.browseForms')}
+                    <FileText className="h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
 
               {/* Location Detector below buttons */}
@@ -206,36 +187,18 @@ const Home = () => {
                 {user ? t('cta.authedDesc') : t('cta.guestDesc')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-                {user ? (
-                  <>
-                    <Link to="/form-library">
-                      <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
-                        {t('cta.browse')}
-                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                    <Link to="/form-scraper">
-                      <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                        {t('cta.scrape')}
-                        <Upload className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/login">
-                      <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
-                        {t('cta.login')}
-                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                    <Link to="/signup">
-                      <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                        {t('cta.signup')}
-                      </Button>
-                    </Link>
-                  </>
-                )}
+                <Link to="/search">
+                  <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
+                    {user ? t('cta.browse') : t('cta.login')}
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+                <Link to={user ? "/form-library" : "/signup"}>
+                  <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
+                    {user ? t('hero.browseForms') : t('cta.signup')}
+                    {user && <FileText className="h-4 w-4" />}
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

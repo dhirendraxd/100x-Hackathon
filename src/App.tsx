@@ -33,8 +33,8 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/search" element={<SmartSearch />} />
-            {/* Redirect old dashboard route to SmartSearch (Government Forms) */}
-            <Route path="/dashboard" element={<Navigate to="/search" replace />} />
+            {/* Redirect old dashboard route to home */}
+            <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="/form-scraper" element={<FormScraper />} />
             <Route path="/form-library" element={<FormLibrary />} />
             <Route path="/form-viewer/:formId" element={<FormViewer />} />
