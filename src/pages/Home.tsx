@@ -49,7 +49,7 @@ const Home = () => {
                   </Button>
                 </Link>
                 <Link to="/form-filler" className="w-full sm:w-auto">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 border-white/10 hover:bg-white/5 px-6 py-4 md:py-5 text-sm md:text-base">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 hover:bg-white/5 px-6 py-4 md:py-5 text-sm md:text-base">
                     Fill Forms
                     <FileText className="h-4 w-4" />
                   </Button>
@@ -194,7 +194,7 @@ const Home = () => {
                   </Button>
                 </Link>
                 <Link to={user ? "/form-filler" : "/signup"} className="w-full sm:w-auto">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 border-white/10 hover:bg-white/5 px-6 py-4 md:py-5 text-sm md:text-base">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 hover:bg-white/5 px-6 py-4 md:py-5 text-sm md:text-base">
                     {user ? 'Fill Forms' : t('cta.signup')}
                     {user && <FileText className="h-4 w-4" />}
                   </Button>

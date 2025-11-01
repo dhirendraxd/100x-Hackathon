@@ -778,7 +778,7 @@ const FormProgressDashboard = () => {
                         <Button asChild size="sm" className="flex-1">
                           <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">Open</a>
                         </Button>
-                        <Button size="sm" variant="outline" className="gap-2 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-400" onClick={async () => {
+                        <Button size="sm" variant="outline" className="gap-2 hover:bg-red-500/20 hover:text-red-400" onClick={async () => {
                           try {
                             const r = storageRef(storage, doc.fileUrl);
                             await deleteObject(r);

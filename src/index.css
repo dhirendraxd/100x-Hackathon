@@ -109,6 +109,30 @@ All colors MUST be HSL.
     font-family: 'Space Grotesk', system-ui, sans-serif;
     letter-spacing: -0.02em;
   }
+  /* Ensure form controls have high contrast and visible placeholder text */
+  input, textarea, select, button {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--input));
+    border-color: hsl(var(--border));
+    caret-color: hsl(var(--primary));
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 1; /* ensure placeholder is not faded */
+  }
+
+  /* For WebKit-based browsers where placeholder may be painted differently */
+  input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 1;
+  }
+
+  /* Make sure file inputs and hidden inputs don't inherit odd colors */
+  input[type="file"] {
+    color: hsl(var(--foreground));
+    background-color: transparent;
+  }
 }
 
 @layer utilities {
