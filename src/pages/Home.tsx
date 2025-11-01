@@ -130,7 +130,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-black/20">
+  <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-black/10">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-10 sm:mb-12 md:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 md:mb-4">
