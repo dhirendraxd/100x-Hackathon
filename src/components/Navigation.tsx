@@ -4,6 +4,7 @@ import { Menu, X, Home, User, Upload } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { ThemeToggle } from "./ThemeToggle";
 import LocationDetector from "./LocationDetector";
 import { useTranslation } from 'react-i18next';
 
@@ -81,6 +82,9 @@ const Navigation = () => {
             <Button variant="ghost" size="sm" onClick={toggleLang} className="text-xs sm:text-sm">
               {currentLang === 'en' ? 'NE' : 'EN'}
             </Button>
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
           </div>
 
           {/* Mobile Menu Button */}
@@ -130,6 +134,12 @@ const Navigation = () => {
               <Button variant="outline" onClick={toggleLang} className="w-full text-sm sm:text-base py-2.5 sm:py-3">
                 {currentLang === 'en' ? 'Switch to Nepali' : 'Switch to English'}
               </Button>
+
+              {/* Theme Toggle Mobile */}
+              <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-border">
+                <span className="text-sm sm:text-base text-foreground">Theme</span>
+                <ThemeToggle />
+              </div>
 
               {/* Auth button - Single Join Now */}
               {!user && (

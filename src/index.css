@@ -8,6 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Dark Mode (Default) */
     --background: 160 25% 8%;
     --foreground: 0 0% 98%;
 
@@ -47,6 +48,45 @@ All colors MUST be HSL.
     --shadow-card: 0 10px 40px hsl(0 0% 0% / 0.5);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Light Mode */
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 160 25% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 160 25% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 25% 10%;
+
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 145 80% 42%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 160 10% 95%;
+    --muted-foreground: 160 5% 40%;
+
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 160 10% 90%;
+    --input: 160 10% 95%;
+    --ring: 160 84% 39%;
+
+    --gradient-dark: linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(160, 10%, 98%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(160, 5%, 98%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(160, 80%, 35%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(160, 80%, 35%) 100%);
+    
+    --shadow-glow: 0 0 40px hsl(160 84% 39% / 0.2);
+    --shadow-card: 0 10px 40px hsl(160 25% 8% / 0.1);
   }
 }
 

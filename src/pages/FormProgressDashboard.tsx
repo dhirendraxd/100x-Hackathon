@@ -360,7 +360,35 @@ const FormProgressDashboard = () => {
         }
       }
 
-      toast.success('Profile and documents saved for autofill');
+        // Show detailed success message
+        const uploadedCount = entries.length;
+        const hasPersonalInfo = Boolean(manual.fullName || manual.dateOfBirth || manual.gender);
+        const hasDocuments = Boolean(manual.citizenshipNumber || manual.passportNumber);
+      
+        let successMsg = 'Successfully saved to your profile: ';
+        const parts: string[] = [];
+        if (uploadedCount > 0) parts.push(`${uploadedCount} file(s)`);
+        if (hasPersonalInfo) parts.push('personal information');
+        if (hasDocuments) parts.push('document details');
+        successMsg += parts.join(', ');
+      
+        toast.success(successMsg, {
+          description: 'Your data is ready for autofill in forms',
+          duration: 5000,
+        });
+      
+        // Reload uploaded documents list
+        const profile = await getUserProfile(user.uid);
+        const updatedFiles = profile?.uploadedFiles || {};
+        const list: Array<{ key: string; fileName: string; fileUrl: string; fileSize: number; uploadedAt: string; quality?: string }> = Object.entries(updatedFiles).map(([key, meta]) => ({
+          key,
+          fileName: meta.fileName,
+          fileUrl: meta.fileUrl,
+          fileSize: meta.fileSize,
+          uploadedAt: meta.uploadDate,
+          quality: meta.aiVerification?.quality,
+        }));
+        setUploadedDocs(list);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Unknown error';
       toast.error(`Failed to save profile: ${msg}`);
@@ -552,7 +580,13 @@ const FormProgressDashboard = () => {
                     <Label className="text-white">Citizenship (Front)</Label>
                     <Input type="file" accept="image/*,application/pdf" onChange={(e) => handleFilePick('citizenshipFront', e.target.files?.[0] || null)} />
                     {files.citizenshipFront && (
-                      <p className="text-xs text-gray-400">{files.citizenshipFront.name} • {formatFileSize(files.citizenshipFront.size)}</p>
+                        <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/30 rounded-md">
+                          <FileText className="h-4 w-4 text-green-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-green-300 font-medium truncate">{files.citizenshipFront.name}</p>
+                            <p className="text-xs text-green-400/70">{formatFileSize(files.citizenshipFront.size)}</p>
+                          </div>
+                        </div>
                     )}
                     {fileAnalysis.citizenshipFront?.meta && (
                       <div className="text-xs text-gray-300">
@@ -573,7 +607,13 @@ const FormProgressDashboard = () => {
                     <Label className="text-white">Citizenship (Back)</Label>
                     <Input type="file" accept="image/*,application/pdf" onChange={(e) => handleFilePick('citizenshipBack', e.target.files?.[0] || null)} />
                     {files.citizenshipBack && (
-                      <p className="text-xs text-gray-400">{files.citizenshipBack.name} • {formatFileSize(files.citizenshipBack.size)}</p>
+                        <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/30 rounded-md">
+                          <FileText className="h-4 w-4 text-green-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-green-300 font-medium truncate">{files.citizenshipBack.name}</p>
+                            <p className="text-xs text-green-400/70">{formatFileSize(files.citizenshipBack.size)}</p>
+                          </div>
+                        </div>
                     )}
                   </div>
                   {/* Passport Page */}
@@ -581,7 +621,13 @@ const FormProgressDashboard = () => {
                     <Label className="text-white">Passport (Photo Page)</Label>
                     <Input type="file" accept="image/*,application/pdf" onChange={(e) => handleFilePick('passportPage', e.target.files?.[0] || null)} />
                     {files.passportPage && (
-                      <p className="text-xs text-gray-400">{files.passportPage.name} • {formatFileSize(files.passportPage.size)}</p>
+                        <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/30 rounded-md">
+                          <FileText className="h-4 w-4 text-green-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-green-300 font-medium truncate">{files.passportPage.name}</p>
+                            <p className="text-xs text-green-400/70">{formatFileSize(files.passportPage.size)}</p>
+                          </div>
+                        </div>
                     )}
                   </div>
                   {/* Voter ID */}
@@ -589,7 +635,13 @@ const FormProgressDashboard = () => {
                     <Label className="text-white">Voter ID</Label>
                     <Input type="file" accept="image/*,application/pdf" onChange={(e) => handleFilePick('voterId', e.target.files?.[0] || null)} />
                     {files.voterId && (
-                      <p className="text-xs text-gray-400">{files.voterId.name} • {formatFileSize(files.voterId.size)}</p>
+                        <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/30 rounded-md">
+                          <FileText className="h-4 w-4 text-green-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-green-300 font-medium truncate">{files.voterId.name}</p>
+                            <p className="text-xs text-green-400/70">{formatFileSize(files.voterId.size)}</p>
+                          </div>
+                        </div>
                     )}
                   </div>
                 </div>
@@ -647,8 +699,31 @@ const FormProgressDashboard = () => {
                   </div>
                 </div>
 
+                  {/* Summary of selected files */}
+                  {(files.citizenshipFront || files.citizenshipBack || files.passportPage || files.voterId) && (
+                    <Alert className="border-blue-500/50 bg-blue-500/10">
+                      <Upload className="h-4 w-4 text-blue-400" />
+                      <AlertDescription className="text-blue-200">
+                        <div className="font-semibold mb-2">Files ready to upload:</div>
+                        <ul className="list-disc list-inside space-y-1 text-sm">
+                          {files.citizenshipFront && <li>Citizenship (Front): {files.citizenshipFront.name}</li>}
+                          {files.citizenshipBack && <li>Citizenship (Back): {files.citizenshipBack.name}</li>}
+                          {files.passportPage && <li>Passport: {files.passportPage.name}</li>}
+                          {files.voterId && <li>Voter ID: {files.voterId.name}</li>}
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                 <div className="flex gap-3">
-                  <Button onClick={saveProfileFromManual} disabled={!user}>Save to Profile</Button>
+                    <Button 
+                      onClick={saveProfileFromManual} 
+                      disabled={!user}
+                      className="bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-2 flex items-center gap-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Save Files & Data to Profile
+                    </Button>
                   {!user && (
                     <Alert className="border-yellow-500/50 bg-yellow-500/10">
                       <AlertDescription className="text-yellow-200">Sign in to persist these details for autofill.</AlertDescription>
