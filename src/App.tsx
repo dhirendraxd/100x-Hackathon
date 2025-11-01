@@ -8,9 +8,6 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import FormLibrary from "./pages/FormLibrary";
-import FormViewer from "./pages/FormViewer";
-import FormBuilder from "./pages/FormBuilder";
 import FormFiller from "./pages/FormFiller";
 import FormProgressDashboard from "./pages/FormProgressDashboard";
 import SmartSearch from "./pages/SmartSearch";
@@ -33,9 +30,6 @@ const App = () => (
             <Route path="/search" element={<SmartSearch />} />
             {/* Redirect old dashboard route to home */}
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
-            <Route path="/form-library" element={<FormLibrary />} />
-            <Route path="/form-viewer/:formId" element={<FormViewer />} />
-            <Route path="/form-builder/:formId" element={<FormBuilder />} />
             <Route path="/form-filler" element={<FormFiller />} />
             <Route path="/form-progress" element={<FormProgressDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

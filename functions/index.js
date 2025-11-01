@@ -7,18 +7,6 @@ if (!getApps().length) {
   initializeApp();
 }
 
-// Import form scraper function
-export { scrapeGovernmentForm } from "./scrapeGovernmentForm.js";
-
-// Import annotation generation functions
-export { generateFormAnnotations, batchGenerateAnnotations } from "./generateFormAnnotations.js";
-
-// Import simplified form generation functions
-export { generateSimplifiedForm, batchGenerateSimplifiedForms } from "./generateSimplifiedForm.js";
-
-// Import cheat sheet generation functions
-export { generateCheatSheet, batchGenerateCheatSheets } from "./generateCheatSheet.js";
-
 // Helper: convert data URL/base64 to Buffer
 function base64ToBuffer(imageBase64) {
   if (!imageBase64) return Buffer.from("");

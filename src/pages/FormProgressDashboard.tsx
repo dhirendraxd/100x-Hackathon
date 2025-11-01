@@ -732,26 +732,19 @@ const FormProgressDashboard = () => {
               <Folders className="h-5 w-5 text-primary" />Quick Actions
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button onClick={() => navigate("/form-scraper")} variant="outline" className="justify-start gap-2 h-auto py-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Button onClick={() => navigate("/form-filler")} variant="outline" className="justify-start gap-2 h-auto py-4">
+              <FileText className="h-5 w-5 text-primary" />
+              <div className="text-left">
+                <div className="font-semibold">Fill Forms</div>
+                <div className="text-xs text-gray-400">Complete government forms</div>
+              </div>
+            </Button>
+            <Button onClick={() => navigate("/search")} variant="outline" className="justify-start gap-2 h-auto py-4">
               <Upload className="h-5 w-5 text-primary" />
               <div className="text-left">
-                <div className="font-semibold">Upload New Form</div>
-                <div className="text-xs text-gray-400">Scrape a government form</div>
-              </div>
-            </Button>
-            <Button onClick={() => navigate("/form-library")} variant="outline" className="justify-start gap-2 h-auto py-4">
-              <Folders className="h-5 w-5 text-primary" />
-              <div className="text-left">
-                <div className="font-semibold">Browse Library</div>
-                <div className="text-xs text-gray-400">Find forms to fill</div>
-              </div>
-            </Button>
-            <Button onClick={() => navigate("/document-checker")} variant="outline" className="justify-start gap-2 h-auto py-4">
-              <CheckCircle2 className="h-5 w-5 text-primary" />
-              <div className="text-left">
-                <div className="font-semibold">Check Documents</div>
-                <div className="text-xs text-gray-400">Validate your files</div>
+                <div className="font-semibold">Smart Search</div>
+                <div className="text-xs text-gray-400">Find & upload documents</div>
               </div>
             </Button>
           </CardContent>
