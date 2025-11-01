@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { validateDocumentEnhanced, type EnhancedValidationResult, fileToBase64, formatFileSize } from "@/services/documentValidation";
 import { extractTextSmartFromBase64 } from "@/services/textExtraction";
 import { saveUserProfile, saveUploadedFile, removeUploadedFile, getUserProfile, type UserProfile } from "@/services/userProfileService";
+import { getUserForms, type FormData as SavedForm } from "@/services/formService";
 import { storage } from "@/lib/firebase";
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import {
@@ -66,6 +67,7 @@ const FormProgressDashboard = () => {
   const [drafts, setDrafts] = useState<FormDraft[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [uploadedDocs, setUploadedDocs] = useState<Array<{ key: string; fileName: string; fileUrl: string; fileSize: number; uploadedAt: string; quality?: string }>>([]);
+  const [submissions, setSubmissions] = useState<Array<SavedForm & { pdfUrl?: string }>>([]);
   // Autofill Setup state
   const [files, setFiles] = useState<Record<string, File | null>>({
     citizenshipFront: null,
@@ -151,6 +153,23 @@ const FormProgressDashboard = () => {
       }
     };
     loadDocs();
+    const loadSubmissions = async () => {
+      if (!user) { setSubmissions([]); return; }
+      try {
+        const forms = await getUserForms(user.uid);
+        const submitted = forms.filter(f => f.status === 'submitted');
+        // Extract pdfUrl if nested in data (typing guard)
+        const mapped = submitted.map((f) => {
+          const d = (f.data || {}) as Record<string, unknown>;
+          const pdfUrl = typeof d.pdfUrl === 'string' ? d.pdfUrl : undefined;
+          return { ...f, pdfUrl };
+        });
+        setSubmissions(mapped);
+      } catch (e) {
+        console.warn('Failed to load submissions', e);
+      }
+    };
+    loadSubmissions();
   }, [user]);
 
   const handleSignOut = async () => {
@@ -740,6 +759,54 @@ const FormProgressDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* My Submissions Tab */}
+          <TabsContent value="submissions" className="space-y-4">
+            {!user ? (
+              <Alert className="border-blue-500/50 bg-blue-500/10">
+                <AlertDescription className="text-blue-200">Sign in to view your submitted forms.</AlertDescription>
+              </Alert>
+            ) : submissions.length === 0 ? (
+              <Card className="bg-card/50 backdrop-blur border-white/10">
+                <CardContent className="p-8 text-center">
+                  <Folders className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">No submissions yet</h3>
+                  <p className="text-muted-foreground">Submit a form and it will appear here with a download link.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {submissions.map((f) => (
+                  <Card key={f.id} className="bg-card/50 backdrop-blur border-white/10">
+                    <CardContent className="p-5 flex items-center justify-between">
+                      <div>
+                        <div className="text-white font-semibold">{f.formType}</div>
+                        <div className="text-xs text-muted-foreground">Updated {(() => {
+                          // Support Firestore Timestamp shape { toDate: () => Date }
+                          const lv: unknown = f.lastUpdated as unknown;
+                          let dt: Date;
+                          if (lv && typeof lv === 'object' && 'toDate' in (lv as Record<string, unknown>)) {
+                            const maybe = lv as { toDate?: () => Date };
+                            dt = typeof maybe.toDate === 'function' ? maybe.toDate() : new Date();
+                          } else if (lv instanceof Date) {
+                            dt = lv;
+                          } else {
+                            dt = new Date(String(lv));
+                          }
+                          return isNaN(dt.getTime()) ? '' : dt.toLocaleString();
+                        })()}</div>
+                      </div>
+                      {f.pdfUrl ? (
+                        <a href={f.pdfUrl} target="_blank" rel="noreferrer" className="text-primary text-sm">Open</a>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">No file</span>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* My Documents Tab */}

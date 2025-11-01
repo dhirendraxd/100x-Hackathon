@@ -81,6 +81,30 @@ export const submitForm = async (
   }
 };
 
+// Create a new submitted form (useful when you don't have a draft id yet)
+export const saveFormSubmission = async (
+  userId: string,
+  formType: string,
+  formData: Record<string, unknown>,
+  extras?: { pdfUrl?: string }
+): Promise<string> => {
+  try {
+    const payload: Omit<FormData, 'id'> = {
+      userId,
+      formType,
+      data: { ...formData, ...(extras?.pdfUrl ? { pdfUrl: extras.pdfUrl } : {}) },
+      status: 'submitted',
+      timestamp: Timestamp.now(),
+      lastUpdated: Timestamp.now(),
+    };
+    const ref = await addDoc(collection(db, 'forms'), payload);
+    return ref.id;
+  } catch (error) {
+    console.error('Error saving submitted form:', error);
+    throw new Error('Failed to save submission');
+  }
+};
+
 // Get user's forms
 export const getUserForms = async (userId: string): Promise<FormData[]> => {
   try {

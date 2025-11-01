@@ -20,7 +20,9 @@ import Footer from "@/components/Footer";
 import ParticleBackground from "@/components/ParticleBackground";
 import FieldWithHint from "@/components/FieldWithHint";
 import { toast } from "sonner";
-import { saveFormDraft } from "@/services/formService";
+import { saveFormDraft, saveFormSubmission } from "@/services/formService";
+import { storage } from "@/lib/firebase";
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { getAutofillData, type AutofillData } from "@/services/userProfileService";
 import { getProgressMessage } from "@/services/fieldHintService";
@@ -476,7 +478,7 @@ const FormFiller = () => {
     toast.success("Form reset successfully!");
   };
 
-  const downloadForm = () => {
+  const downloadForm = async () => {
     if (!user) {
       toast.error('Please log in to download your form.');
       return;
@@ -485,9 +487,76 @@ const FormFiller = () => {
       toast.error("Please fill in at least service type and full name");
       return;
     }
-    toast.success(
-      "Your form has been prepared! In the full version, this would download a PDF."
-    );
+    try {
+      // 1) Build a simple HTML summary (acts as printable/downloadable doc)
+      const title = `${formData.service} – Form Summary`;
+      const createdAt = new Date().toLocaleString();
+      const summaryHtml = `<!doctype html><html><head><meta charset="utf-8"/><title>${title}</title>
+        <style>body{font-family:Arial,Helvetica,sans-serif;padding:24px;color:#111}
+        h1{margin:0 0 8px;font-size:20px}
+        h2{margin:20px 0 8px;font-size:16px}
+        table{border-collapse:collapse;width:100%;font-size:12px}
+        td,th{border:1px solid #ddd;padding:8px;text-align:left}
+        .meta{color:#666;font-size:12px;margin-bottom:16px}
+        </style></head><body>
+        <h1>${title}</h1>
+        <div class="meta">Generated at ${createdAt} • User: ${user.email || user.uid}</div>
+        <h2>Personal Details</h2>
+        <table><tbody>
+          <tr><th>Full Name</th><td>${formData.fullName || ''}</td></tr>
+          <tr><th>Date of Birth</th><td>${formData.dateOfBirth || ''}</td></tr>
+          <tr><th>Gender</th><td>${formData.gender || ''}</td></tr>
+          <tr><th>Email</th><td>${formData.email || ''}</td></tr>
+          <tr><th>Phone</th><td>${formData.phone || ''}</td></tr>
+          <tr><th>Address</th><td>${formData.address || ''}</td></tr>
+        </tbody></table>
+        <h2>NID Details</h2>
+        <table><tbody>
+          ${Object.entries(nidDetails).map(([k,v])=>`<tr><th>${k}</th><td>${String(v||'')}</td></tr>`).join('')}
+        </tbody></table>
+      </body></html>`;
+
+      const blob = new Blob([summaryHtml], { type: 'text/html' });
+
+      // 2) Upload to Firebase Storage
+      const filenameSlug = (formData.service || 'form').toLowerCase().replace(/[^a-z0-9]+/g,'-');
+      const path = `userForms/${user.uid}/${Date.now()}-${filenameSlug}.html`;
+      const sref = storageRef(storage, path);
+      await uploadBytes(sref, blob, { contentType: 'text/html' });
+      const fileUrl = await getDownloadURL(sref);
+
+      // 3) Persist a submission record
+      await saveFormSubmission(user.uid, formData.service || 'general', { ...formData, nidDetails }, { pdfUrl: fileUrl });
+
+      // 4) Trigger client download of the same HTML (acts as offline copy)
+      const a = document.createElement('a');
+      a.href = fileUrl;
+      a.download = `${filenameSlug}-summary.html`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      // 5) Email the user with the link
+      try {
+        const { sendCustomNotification } = await import('@/services/notificationService');
+        const subject = `${formData.service || 'Form'} – Your submission link`;
+        const html = `<div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6">
+            <h2>${subject}</h2>
+            <p>Thanks for using Mitra Smart. Your form summary is ready.</p>
+            <p><a href="${fileUrl}" target="_blank">View / Download your form</a></p>
+            <p style="color:#64748b">You can also find this under My Submissions in your dashboard.</p>
+          </div>`;
+        if (user.email) await sendCustomNotification(user.email, subject, html);
+      } catch (e) {
+        console.warn('Failed to send email notification', e);
+      }
+
+      toast.success('Form saved to your dashboard and a download link was emailed to you.');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      console.error('Download form error:', msg);
+      toast.error(`Failed to prepare form: ${msg}`);
+    }
   };
 
   const nextStep = () => {
@@ -758,14 +827,14 @@ const FormFiller = () => {
                         required
                         showHints={showHints}
                       />
-                      <div className="space-y-2">
-                        <Label>Middle Name (बीचको नाम)</Label>
-                        <Input
-                          value={nidDetails.middleName}
-                          onChange={(e) => handleNidChange("middleName", e.target.value)}
-                          placeholder="Bahadur / बहादुर"
-                        />
-                      </div>
+                      <FieldWithHint
+                        id="middleName"
+                        label="Middle Name (बीचको नाम)"
+                        value={nidDetails.middleName}
+                        onChange={(value) => handleNidChange("middleName", value)}
+                        placeholder="Bahadur / बहादुर"
+                        showHints={showHints}
+                      />
                       <FieldWithHint
                         id="lastName"
                         label="Last Name (थर)"
@@ -844,14 +913,14 @@ const FormFiller = () => {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Birth Place (जन्म स्थान)</Label>
-                        <Input
-                          value={nidDetails.birthPlace}
-                          onChange={(e) => handleNidChange("birthPlace", e.target.value)}
-                          placeholder="Birth place"
-                        />
-                      </div>
+                      <FieldWithHint
+                        id="birthPlace"
+                        label="Birth Place (जन्म स्थान)"
+                        value={nidDetails.birthPlace}
+                        onChange={(value) => handleNidChange("birthPlace", value)}
+                        placeholder="Birth place"
+                        showHints={showHints}
+                      />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
