@@ -20,16 +20,16 @@ const Home = () => {
       <section className="relative min-h-screen gradient-hero">
         <Navigation />
         
-        <div className="container mx-auto max-w-7xl px-4 pt-32 pb-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-200px)]">
-            <div className="text-left z-10 space-y-8">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 md:pt-32 pb-16 md:pb-20">
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center min-h-[calc(100vh-180px)] md:min-h-[calc(100vh-200px)]">
+            <div className="text-left z-10 space-y-6 md:space-y-8">
               <div className="animate-fade-in">
-                <span className="inline-block px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-foreground/80 text-xs font-medium backdrop-blur-sm">
+                <span className="inline-block px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-foreground/80 text-xs sm:text-sm font-medium backdrop-blur-sm">
                   {t('hero.badge')}
                 </span>
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight animate-fade-in">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight animate-fade-in">
                 <span className="text-white">{t('hero.titleLine1')} </span>
                 <br />
                 <span className="gradient-text-green">{t('hero.titleLine2')}</span>
@@ -37,20 +37,20 @@ const Home = () => {
                 <span className="gradient-text-green">{t('hero.titleLine3')}</span>
               </h1>
               
-              <p className="text-base md:text-[17px] text-gray-400 max-w-xl animate-fade-in leading-relaxed">
+              <p className="text-sm sm:text-base md:text-[17px] text-gray-400 max-w-xl animate-fade-in leading-relaxed">
                 {t('hero.desc')}
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 animate-fade-in">
-                <Link to="/search">
-                  <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in">
+                <Link to="/search" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto gap-2 group bg-primary hover:bg-primary/90 px-6 py-4 md:py-5 text-sm md:text-base">
                     {t('hero.getStarted')}
                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/form-library">
-                  <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                    {t('hero.browseForms')}
+                <Link to="/form-filler" className="w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 border-white/10 hover:bg-white/5 px-6 py-4 md:py-5 text-sm md:text-base">
+                    Fill Forms
                     <FileText className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -84,45 +84,45 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-20 px-4 bg-gradient-dark relative">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-dark relative">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-2xl md:text-4xl font-bold mb-4">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 md:mb-4">
               <span className="gradient-text-green">{t('why.title1')}</span>{" "}
               <span className="text-white">{t('why.title2')}</span>
             </h2>
-            <p className="text-lg text-gray-400">
+            <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto px-4">
               {t('why.subtitle')}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="group transition-colors border border-white/10 bg-black/10 backdrop-blur-xl hover:border-white/20">
-              <CardContent className="p-7">
-                <div className="mb-5 inline-flex p-3.5 rounded-xl bg-white/5 backdrop-blur-sm group-hover:bg-white/10 transition-colors">
-                  <CheckCircle2 className="h-8 w-8 text-primary" />
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+            <Card className="group transition-colors border border-white/10 bg-black/10 backdrop-blur-xl hover:border-white/20 sm:col-span-2 md:col-span-1">
+              <CardContent className="p-5 sm:p-6 md:p-7">
+                <div className="mb-4 sm:mb-5 inline-flex p-3 sm:p-3.5 rounded-xl bg-white/5 backdrop-blur-sm group-hover:bg-white/10 transition-colors">
+                  <CheckCircle2 className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-white">{t('why.card1Title')}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-2 text-white">{t('why.card1Title')}</h3>
                 <p className="text-gray-400 leading-relaxed text-sm">{t('why.card1Desc')}</p>
               </CardContent>
             </Card>
 
             <Card className="group transition-colors border border-white/10 bg-black/10 backdrop-blur-xl hover:border-white/20">
-              <CardContent className="p-7">
-                <div className="mb-5 inline-flex p-3.5 rounded-xl bg-white/5 backdrop-blur-sm group-hover:bg-white/10 transition-colors">
-                  <Zap className="h-8 w-8 text-primary" />
+              <CardContent className="p-5 sm:p-6 md:p-7">
+                <div className="mb-4 sm:mb-5 inline-flex p-3 sm:p-3.5 rounded-xl bg-white/5 backdrop-blur-sm group-hover:bg-white/10 transition-colors">
+                  <Zap className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-white">{t('why.card2Title')}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-2 text-white">{t('why.card2Title')}</h3>
                 <p className="text-gray-400 leading-relaxed text-sm">{t('why.card2Desc')}</p>
               </CardContent>
             </Card>
 
             <Card className="group transition-colors border border-white/10 bg-black/10 backdrop-blur-xl hover:border-white/20">
-              <CardContent className="p-7">
-                <div className="mb-5 inline-flex p-3.5 rounded-xl bg-white/5 backdrop-blur-sm group-hover:bg-white/10 transition-colors">
-                  <Clock className="h-8 w-8 text-primary" />
+              <CardContent className="p-5 sm:p-6 md:p-7">
+                <div className="mb-4 sm:mb-5 inline-flex p-3 sm:p-3.5 rounded-xl bg-white/5 backdrop-blur-sm group-hover:bg-white/10 transition-colors">
+                  <Clock className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-white">{t('why.card3Title')}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-2 text-white">{t('why.card3Title')}</h3>
                 <p className="text-gray-400 leading-relaxed text-sm">{t('why.card3Desc')}</p>
               </CardContent>
             </Card>
@@ -130,45 +130,45 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-20 px-4 bg-black/20">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-black/20">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-2xl md:text-4xl font-bold mb-4">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 md:mb-4">
               <span className="text-white">{t('works.title1')}</span>{" "}
               <span className="gradient-text-green">{t('works.title2')}</span>
             </h2>
-            <p className="text-lg text-gray-400">
+            <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto px-4">
               {t('works.subtitle')}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="border border-white/10 bg-black/10 backdrop-blur-xl text-center group hover:border-white/20 transition-colors">
-              <CardContent className="p-7 space-y-3">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 backdrop-blur-sm flex items-center justify-center text-2xl font-bold text-primary group-hover:bg-primary/20 transition-colors">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+            <Card className="border border-white/10 bg-black/10 backdrop-blur-xl text-center group hover:border-white/20 transition-colors sm:col-span-2 md:col-span-1">
+              <CardContent className="p-5 sm:p-6 md:p-7 space-y-3">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-primary/10 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl font-bold text-primary group-hover:bg-primary/20 transition-colors">
                   1
                 </div>
-                <h3 className="text-lg font-bold text-white">{t('works.step1Title')}</h3>
+                <h3 className="text-base sm:text-lg font-bold text-white">{t('works.step1Title')}</h3>
                 <p className="text-sm text-gray-400 leading-relaxed">{t('works.step1Desc')}</p>
               </CardContent>
             </Card>
 
             <Card className="border border-white/10 bg-black/10 backdrop-blur-xl text-center group hover:border-white/20 transition-colors">
-              <CardContent className="p-7 space-y-3">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 backdrop-blur-sm flex items-center justify-center text-2xl font-bold text-primary group-hover:bg-primary/20 transition-colors">
+              <CardContent className="p-5 sm:p-6 md:p-7 space-y-3">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-primary/10 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl font-bold text-primary group-hover:bg-primary/20 transition-colors">
                   2
                 </div>
-                <h3 className="text-lg font-bold text-white">{t('works.step2Title')}</h3>
+                <h3 className="text-base sm:text-lg font-bold text-white">{t('works.step2Title')}</h3>
                 <p className="text-sm text-gray-400 leading-relaxed">{t('works.step2Desc')}</p>
               </CardContent>
             </Card>
 
             <Card className="border border-white/10 bg-black/10 backdrop-blur-xl text-center group hover:border-white/20 transition-colors">
-              <CardContent className="p-7 space-y-3">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 backdrop-blur-sm flex items-center justify-center text-2xl font-bold text-primary group-hover:bg-primary/20 transition-colors">
+              <CardContent className="p-5 sm:p-6 md:p-7 space-y-3">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-primary/10 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl font-bold text-primary group-hover:bg-primary/20 transition-colors">
                   3
                 </div>
-                <h3 className="text-lg font-bold text-white">{t('works.step3Title')}</h3>
+                <h3 className="text-base sm:text-lg font-bold text-white">{t('works.step3Title')}</h3>
                 <p className="text-sm text-gray-400 leading-relaxed">{t('works.step3Desc')}</p>
               </CardContent>
             </Card>
@@ -176,26 +176,26 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-32 px-4 bg-gradient-dark">
+      <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 bg-gradient-dark">
         <div className="container mx-auto max-w-4xl">
           <Card className="border border-white/10 bg-black/10 backdrop-blur-xl">
-            <CardContent className="p-10 text-center space-y-6">
-              <h2 className="text-3xl md:text-4xl font-bold">
+            <CardContent className="p-6 sm:p-8 md:p-10 text-center space-y-5 md:space-y-6">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
                 <span className="gradient-text-green">{t('cta.ready')}</span>
               </h2>
-              <p className="text-base md:text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto">
+              <p className="text-sm sm:text-base md:text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto px-4">
                 {user ? t('cta.authedDesc') : t('cta.guestDesc')}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-                <Link to="/search">
-                  <Button size="lg" className="gap-2 group bg-primary hover:bg-primary/90 px-6 py-5">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-2">
+                <Link to="/search" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto gap-2 group bg-primary hover:bg-primary/90 px-6 py-4 md:py-5 text-sm md:text-base">
                     {user ? t('cta.browse') : t('cta.login')}
                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to={user ? "/form-library" : "/signup"}>
-                  <Button size="lg" variant="outline" className="gap-2 border-white/10 hover:bg-white/5 px-6 py-5">
-                    {user ? t('hero.browseForms') : t('cta.signup')}
+                <Link to={user ? "/form-filler" : "/signup"} className="w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 border-white/10 hover:bg-white/5 px-6 py-4 md:py-5 text-sm md:text-base">
+                    {user ? 'Fill Forms' : t('cta.signup')}
                     {user && <FileText className="h-4 w-4" />}
                   </Button>
                 </Link>

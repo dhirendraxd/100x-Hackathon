@@ -359,26 +359,26 @@ export default function SmartSearch() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-4xl">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold">{t('pages.smart.header', { defaultValue: 'Government Forms' })}</h1>
-            <Button asChild variant="outline" size="sm">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <h1 className="text-2xl sm:text-3xl font-bold">{t('pages.smart.header', { defaultValue: 'Government Forms' })}</h1>
+            <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
               <Link to="/">
                 <Home className="h-4 w-4 mr-2" />
                 {t('nav.home')}
               </Link>
             </Button>
           </div>
-          <p className="text-muted-foreground text-center">{t('pages.smart.subheader', { defaultValue: 'सरकारी फारमहरू' })}</p>
+          <p className="text-sm sm:text-base text-muted-foreground text-center">{t('pages.smart.subheader', { defaultValue: 'सरकारी फारमहरू' })}</p>
         </div>
 
         {/* Location Info */}
         {userLocation && (
-          <Alert className="mb-6 border-primary/20 bg-primary/5">
+          <Alert className="mb-4 sm:mb-6 border-primary/20 bg-primary/5">
             <MapPin className="h-4 w-4 text-primary" />
-            <AlertDescription>
+            <AlertDescription className="text-xs sm:text-sm">
               {t('pages.smart.showingOfficesNear', { defaultValue: 'Showing offices near' })} <strong>{userLocation.city}, {userLocation.district}</strong>
             </AlertDescription>
           </Alert>
@@ -386,9 +386,9 @@ export default function SmartSearch() {
 
         {/* Login Warning for Documents */}
         {!user && (
-          <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
+          <Alert className="mb-4 sm:mb-6 border-yellow-500/50 bg-yellow-500/10">
             <AlertCircle className="h-4 w-4 text-yellow-500" />
-            <AlertDescription>
+            <AlertDescription className="text-xs sm:text-sm">
               <strong>{t('pages.smart.note', { defaultValue: 'Note:' })}</strong> {t('pages.smart.tempSave', { defaultValue: 'Documents uploaded will only be saved temporarily.' })} 
               <Link to="/login" className="text-primary hover:underline font-medium ml-1">
                 {t('cta.login')}
@@ -398,7 +398,7 @@ export default function SmartSearch() {
         )}
 
         {/* All Forms */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {nepalGovForms.map((form) => {
               const nearestOffice = findNearestOffice(form);
               return (
@@ -406,44 +406,45 @@ export default function SmartSearch() {
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-primary" />
+                        <CardTitle className="flex items-start sm:items-center gap-2">
+                          <FileText className="h-5 w-5 text-primary flex-shrink-0 mt-0.5 sm:mt-0" />
                           <div>
-                            <div>{form.name}</div>
-                            <div className="text-sm font-normal text-muted-foreground mt-1">
+                            <div className="text-base sm:text-lg">{form.name}</div>
+                            <div className="text-xs sm:text-sm font-normal text-muted-foreground mt-1">
                               {form.nameNepali}
                             </div>
                           </div>
                         </CardTitle>
-                        <CardDescription className="mt-2">
+                        <CardDescription className="mt-2 text-xs sm:text-sm">
                           {form.description}
                         </CardDescription>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      <Badge variant="secondary" className="flex items-center gap-1">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3">
+                      <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                         <Building2 className="h-3 w-3" />
-                        {form.department}
+                        <span className="hidden sm:inline">{form.department}</span>
+                        <span className="sm:hidden">{form.department.split(' ')[0]}</span>
                       </Badge>
-                      <Badge variant="outline" className="flex items-center gap-1">
+                      <Badge variant="outline" className="flex items-center gap-1 text-xs">
                         <Clock className="h-3 w-3" />
                         {form.estimatedTime}
                       </Badge>
                       {form.fees && (
-                        <Badge variant="outline" className="text-green-600 border-green-600">
-                          Fees: {form.fees}
+                        <Badge variant="outline" className="text-green-600 border-green-600 text-xs">
+                          {form.fees}
                         </Badge>
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3 sm:space-y-4">
                     {/* Required Documents */}
-                    <div className="bg-muted/30 p-4 rounded-lg">
-                      <p className="font-semibold text-sm mb-2">{t('pages.smart.requiredDocs', { defaultValue: 'Required Documents:' })}</p>
-                      <ul className="text-sm text-muted-foreground space-y-1">
+                    <div className="bg-muted/30 p-3 sm:p-4 rounded-lg">
+                      <p className="font-semibold text-xs sm:text-sm mb-2">{t('pages.smart.requiredDocs', { defaultValue: 'Required Documents:' })}</p>
+                      <ul className="text-xs sm:text-sm text-muted-foreground space-y-1">
                         {form.requiredDocuments.map((doc, idx) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <span className="text-primary mt-1">•</span>
+                            <span className="text-primary mt-0.5 sm:mt-1 flex-shrink-0">•</span>
                             <span>{doc}</span>
                           </li>
                         ))}
@@ -451,15 +452,15 @@ export default function SmartSearch() {
                     </div>
 
                     {/* Document Upload Section - Compact */}
-                    <div className="border border-primary/20 rounded-lg p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium flex items-center gap-2">
-                          <Upload className="h-4 w-4 text-primary" />
-                          {t('pages.smart.uploadDocuments', { defaultValue: 'Upload Documents' })}
+                    <div className="border border-primary/20 rounded-lg p-2.5 sm:p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                          <Upload className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="truncate">{t('pages.smart.uploadDocuments', { defaultValue: 'Upload Documents' })}</span>
                         </p>
                         {!user && (
-                          <Badge variant="outline" className="text-xs text-amber-600 border-amber-600">
-                            {t('pages.smart.guestMode', { defaultValue: 'Guest Mode' })}
+                          <Badge variant="outline" className="text-xs text-amber-600 border-amber-600 flex-shrink-0">
+                            Guest
                           </Badge>
                         )}
                       </div>
@@ -469,24 +470,24 @@ export default function SmartSearch() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full h-9 text-sm"
+                          className="w-full h-8 sm:h-9 text-xs sm:text-sm"
                           onClick={() => setShowUploadFields(prev => ({ ...prev, [form.id]: true }))}
                         >
-                          <Upload className="h-4 w-4 mr-2" />
-                          {t('pages.smart.chooseFiles', { defaultValue: 'Choose Files to Upload' })}
+                          <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                          <span className="truncate">{t('pages.smart.chooseFiles', { defaultValue: 'Choose Files to Upload' })}</span>
                         </Button>
                       ) : (
                         <>
                           {/* Individual Document Upload Fields */}
-                          <div className="space-y-3 pt-2">
+                          <div className="space-y-2 sm:space-y-3 pt-2">
                             <p className="text-xs text-muted-foreground font-medium">
                               {t('pages.smart.uploadBelow', { defaultValue: 'Upload required documents below:' })}
                             </p>
                             {form.requiredDocuments.map((doc, docIdx) => (
                               <div key={docIdx} className="space-y-1.5">
                                 <label className="text-xs font-medium text-foreground flex items-center gap-1">
-                                  <span className="text-primary">•</span>
-                                  {doc}
+                                  <span className="text-primary flex-shrink-0">•</span>
+                                  <span className="truncate">{doc}</span>
                                 </label>
                                 <div className="flex gap-2">
                                   <input
@@ -505,10 +506,10 @@ export default function SmartSearch() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="flex-1 h-8 text-xs justify-start"
+                                    className="flex-1 h-7 sm:h-8 text-xs justify-start"
                                     onClick={() => document.getElementById(`file-upload-${form.id}-${docIdx}`)?.click()}
                                   >
-                                    <Upload className="h-3 w-3 mr-2" />
+                                    <Upload className="h-3 w-3 mr-1.5 sm:mr-2 flex-shrink-0" />
                                     <span className="truncate">{t('pages.smart.chooseFile', { defaultValue: 'Choose File (PDF/JPG/PNG)' })}</span>
                                   </Button>
                                 </div>

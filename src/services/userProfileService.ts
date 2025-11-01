@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export interface UserProfile {
@@ -194,6 +194,23 @@ export const saveUploadedFile = async (
     });
   } catch (error) {
     console.error('Error saving uploaded file:', error);
+    throw error;
+  }
+};
+
+// Remove uploaded file metadata for a specific document type
+export const removeUploadedFile = async (
+  userId: string,
+  documentType: string
+): Promise<void> => {
+  try {
+    const userProfileRef = doc(db, 'userProfiles', userId);
+    await updateDoc(userProfileRef, {
+      [`uploadedFiles.${documentType}`]: deleteField(),
+      lastUpdated: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error removing uploaded file:', error);
     throw error;
   }
 };

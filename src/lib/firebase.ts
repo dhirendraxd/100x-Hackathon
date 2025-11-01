@@ -3,6 +3,7 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { getAnalytics, isSupported as analyticsSupported, type Analytics } from 'firebase/analytics';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
 // Firebase configuration (with safe fallbacks for local/dev)
 const firebaseConfig: FirebaseOptions = {
@@ -57,6 +58,7 @@ export const db = getFirestore(app);
 const envRegion = (import.meta as unknown as { env?: Record<string, unknown> }).env?.VITE_FIREBASE_FUNCTIONS_REGION;
 const functionsRegion = typeof envRegion === 'string' && envRegion.length > 0 ? envRegion : 'us-central1';
 export const functions = getFunctions(app, functionsRegion);
+export const storage = getStorage(app);
 
 // Enable Firestore offline persistence (best-effort; ignore if not available)
 if (isBrowser) {
@@ -82,6 +84,12 @@ if (useEmulators) {
     connectFunctionsEmulator(functions, '127.0.0.1', fnPort);
   } catch (e) {
     // Emulator connection failed or already connected; safe to ignore in production build
+  }
+  try {
+    const stPort = Number(import.meta.env.VITE_STORAGE_EMULATOR_PORT || 9199);
+    connectStorageEmulator(storage, '127.0.0.1', stPort);
+  } catch (e) {
+    // Ignore storage emulator errors
   }
 }
 
