@@ -27,6 +27,7 @@ export type DocumentType =
   | 'passport'
   | 'citizenship'
   | 'pan-card'
+  | 'national-id'
   | 'driving-license'
   | 'voter-id'
   | 'business-registration'
