@@ -45,7 +45,7 @@ const Signup = () => {
       toast.error(error);
     } else if (user) {
       toast.success('Account created successfully!');
-      navigate('/dashboard');
+      navigate('/search');
     }
   };
 
@@ -58,7 +58,7 @@ const Signup = () => {
       toast.error(error);
     } else if (user) {
       toast.success('Welcome!');
-      navigate('/dashboard');
+      navigate('/search');
     }
   };
 
