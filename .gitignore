@@ -33,15 +33,22 @@ FORM_SCRAPER_WORKING.md
 MIGRATION_COMPLETE.md
 MOCK_DATA_MODE.md
 QUICK_START.md
+BUGFIXES.md
+CLEANUP_SUMMARY.md
+NID_FORM_ADDED.md
 *_SETUP*.md
 *_STATUS.md
 *_COMPLETE.md
+*_WORKING.md
+*_SUMMARY.md
 docs/
 
 # Test and example files
 test-*.html
 example-*.json
+example-*.html
 *.png
+!public/*.png
 *.svg
 !public/*.svg
 
@@ -49,4 +56,21 @@ example-*.json
 .env
 .env.*
 !.env.example
+!.env.local.example
+
+# GitHub specific
 .github
+
+# Firebase
+.firebaserc
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Build artifacts
+dist/
+dist-ssr/
+build/
+
+# Vercel
+.vercel
