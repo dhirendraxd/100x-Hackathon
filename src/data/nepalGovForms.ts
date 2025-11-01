@@ -19,6 +19,7 @@ export interface GovForm {
   offices: GovOffice[];
   requiredDocuments: string[];
   fees?: string;
+  nextSteps?: string[];
 }
 
 export const nepalGovForms: GovForm[] = [
@@ -36,6 +37,13 @@ export const nepalGovForms: GovForm[] = [
       'Citizenship Certificate (Original + Copy)',
       'Birth Certificate (if available)',
       'Recent Passport Size Photo (as required)',
+    ],
+    nextSteps: [
+      'Visit your Ward Office or designated NID center for biometric enrollment (photo, fingerprints, signature).',
+      'Carry original documents for on-site verification by officials.',
+      'Submit the form and receive an acknowledgment or tracking number.',
+      'Track your application status online via the DoNIDCR portal.',
+      'Collect your NID card when notified or download the digital copy if available.'
     ],
     offices: [
       {
@@ -70,6 +78,13 @@ export const nepalGovForms: GovForm[] = [
       'Citizenship Certificate (Original + Copy)',
       'Passport Size Photo (as per spec)',
       'Previous Passport (for renewal)',
+    ],
+    nextSteps: [
+      'Book an appointment slot from the Department of Passport portal (if required).',
+      'Pay the applicable fee (Normal or Fast Track) and keep the receipt.',
+      'Visit the passport office/center for biometrics and photograph.',
+      'Application will be verified; keep your acknowledgment for tracking.',
+      'Collect your passport when notified or opt for delivery if available.'
     ],
     offices: [
       {
@@ -106,6 +121,13 @@ export const nepalGovForms: GovForm[] = [
       'Ward Office Recommendation',
       'Recent Photos',
     ],
+    nextSteps: [
+      'Obtain a recommendation letter from your local Ward Office.',
+      'Submit documents to the District Administration Office (DAO).',
+      'Attend any verification/interview if called (police verification may apply).',
+      'Wait for the CDO decision and issuance process.',
+      'Collect your Citizenship Certificate from the DAO.'
+    ],
     offices: [
       {
         province: 'Bagmati Province',
@@ -138,6 +160,12 @@ export const nepalGovForms: GovForm[] = [
     requiredDocuments: [
       'Citizenship Certificate (Original + Copy)',
       'Recent Passport Size Photo',
+    ],
+    nextSteps: [
+      'Visit the District Election Office or designated enrollment camp.',
+      'Provide biometrics (photo, fingerprints) and verify your details.',
+      'Confirm your polling station assignment.',
+      'Collect your printed Voter ID when notified.'
     ],
     offices: [
       {

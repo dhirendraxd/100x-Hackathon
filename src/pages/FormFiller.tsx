@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Save, Download, RotateCcw, ChevronRight, AlertCircle } from "lucide-react";
+import { Save, Download, RotateCcw, ChevronRight, AlertCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ParticleBackground from "@/components/ParticleBackground";
 import { toast } from "sonner";
 import { saveFormDraft } from "@/services/formService";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { getAutofillData, type AutofillData } from "@/services/userProfileService";
 
 type FormData = {
   service: string;
@@ -39,6 +41,8 @@ const FormFiller = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   const { user } = useAuthContext();
+  const [autofillAvailable, setAutofillAvailable] = useState(false);
+  const [autofillData, setAutofillData] = useState<AutofillData | null>(null);
   const [formData, setFormData] = useState<FormData>({
     service: "",
     fullName: "",
@@ -66,6 +70,22 @@ const FormFiller = () => {
   const progress = (currentStep / totalSteps) * 100;
 
   useEffect(() => {
+    // Load autofill data if user is logged in
+    const loadAutofillData = async () => {
+      if (user) {
+        try {
+          const data = await getAutofillData(user.uid);
+          if (data) {
+            setAutofillData(data);
+            setAutofillAvailable(true);
+          }
+        } catch (error) {
+          console.error('Error loading autofill data:', error);
+        }
+      }
+    };
+    loadAutofillData();
+
     // Load saved form data from localStorage
     const saved = localStorage.getItem("formData");
     if (saved) {
@@ -79,7 +99,77 @@ const FormFiller = () => {
       // Move to next step automatically if service provided
       setCurrentStep(2);
     }
-  }, [location.search]);
+  }, [location.search, user]);
+
+  const applyAutofill = () => {
+    if (!autofillData) return;
+    
+    setFormData(prev => ({
+      ...prev,
+      fullName: autofillData.fullName || prev.fullName,
+      dateOfBirth: autofillData.dateOfBirth || prev.dateOfBirth,
+      gender: autofillData.gender || prev.gender,
+      email: autofillData.email || prev.email,
+      phone: autofillData.phone || prev.phone,
+      fatherName: autofillData.fatherName || prev.fatherName,
+      motherName: autofillData.motherName || prev.motherName,
+    }));
+    
+    toast.success('Form autofilled successfully!', {
+      description: 'Review and update any fields as needed',
+      icon: <Sparkles className="h-4 w-4" />,
+    });
+  };
+
+  // Email notification helpers (Renewal & Status)
+  const sendRenewalEmail = async () => {
+    const to = (autofillData?.email || user?.email || '').trim();
+    if (!to) {
+      toast.error('No email available for notifications');
+      return;
+    }
+    try {
+      const { sendRenewalReminder } = await import('@/services/notificationService');
+      await sendRenewalReminder(to, {
+        serviceName: formData.service || 'Government Service',
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
+        applicationId: 'APP-' + Math.floor(Math.random() * 1_000_000).toString().padStart(6, '0'),
+        office: 'Nearest Service Center',
+        link: window.location.origin + '/form-progress',
+        notes: 'This is a friendly reminder to renew before the due date.'
+      });
+      toast.success('Renewal reminder email sent!');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to send renewal email');
+    }
+  };
+
+  const sendStatusEmail = async () => {
+    const to = (autofillData?.email || user?.email || '').trim();
+    if (!to) {
+      toast.error('No email available for notifications');
+      return;
+    }
+    try {
+      const { sendStatusUpdate } = await import('@/services/notificationService');
+      const statuses = ['received', 'under_review', 'approved', 'ready_for_collection'] as const;
+      const status = statuses[Math.floor(Math.random() * statuses.length)];
+      await sendStatusUpdate(to, {
+        serviceName: formData.service || 'Government Service',
+        status,
+        applicationId: 'APP-' + Math.floor(Math.random() * 1_000_000).toString().padStart(6, '0'),
+        lastUpdated: new Date().toISOString(),
+        office: 'Nearest Service Center',
+        link: window.location.origin + '/form-progress',
+        etaDays: status === 'under_review' ? 7 : undefined,
+      });
+      toast.success('Status update email sent!');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to send status email');
+    }
+  };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -178,6 +268,27 @@ const FormFiller = () => {
             </Card>
           )}
           
+          {/* Autofill Available Banner */}
+          {user && autofillAvailable && (
+            <Alert className="mb-6 border-blue-500/50 bg-blue-500/10">
+              <Sparkles className="h-4 w-4 text-blue-500" />
+              <AlertDescription className="flex items-center justify-between">
+                <span className="text-sm">
+                  Saved information detected! You can autofill common fields from your profile.
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={applyAutofill}
+                  className="ml-4"
+                >
+                  <Sparkles className="h-3 w-3 mr-2" />
+                  Autofill Now
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="text-center space-y-4 mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground">
               Smart Form Filler
@@ -186,6 +297,19 @@ const FormFiller = () => {
               Fill a simplified demo form similar to the official one
             </p>
           </div>
+
+          {/* Notification shortcuts (visible when we can email) */}
+          {user && (autofillData?.email || user.email) && (
+            <div className="mb-4 flex flex-wrap gap-2 items-center">
+              <span className="text-sm text-muted-foreground">Email Notifications:</span>
+              <Button variant="outline" size="sm" onClick={sendRenewalEmail}>
+                <Sparkles className="h-3 w-3 mr-2" /> Send Renewal Reminder
+              </Button>
+              <Button variant="outline" size="sm" onClick={sendStatusEmail}>
+                <Sparkles className="h-3 w-3 mr-2" /> Send Status Update
+              </Button>
+            </div>
+          )}
 
           {/* Progress Bar */}
           <div className="mb-8">

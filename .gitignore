@@ -49,3 +49,4 @@ example-*.json
 .env
 .env.*
 !.env.example
+.github
