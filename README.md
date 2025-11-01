@@ -57,7 +57,7 @@ The only requirement is having Node.js & npm installed - install with nvm if nee
    npm run dev
    ```
 
-The app will be available at <http://localhost:5173>
+The app will be available at <http://localhost:8080>
 
 ## 🧪 Available Scripts
 
