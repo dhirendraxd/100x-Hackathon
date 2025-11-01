@@ -16,6 +16,11 @@ const firebaseConfig: FirebaseOptions = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
+// Environment helpers
+const isBrowser = typeof window !== 'undefined';
+const hostname = isBrowser ? window.location.hostname : '';
+const isLocalHost = /^(localhost|127\.0\.0\.1)$/.test(hostname);
+
 // Determine if we have a valid config
 const hasConfig = Boolean(
   firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId
@@ -23,7 +28,8 @@ const hasConfig = Boolean(
 
 // Allow either "true"/"1" to enable emulators via env
 const emulatorFlag = String(import.meta.env.VITE_USE_FIREBASE_EMULATORS || '').toLowerCase();
-const useEmulators = emulatorFlag === 'true' || emulatorFlag === '1' || !hasConfig;
+// Hardened: only use emulators when explicitly enabled. Do NOT auto-enable when config is missing.
+const useEmulators = emulatorFlag === 'true' || emulatorFlag === '1';
 
 // When missing config (e.g., fresh clone), use a demo config so the UI still renders locally
 const demoConfig: FirebaseOptions = {
@@ -33,6 +39,13 @@ const demoConfig: FirebaseOptions = {
   appId: 'demo',
   messagingSenderId: 'demo',
 };
+
+// Fail-fast in production if config is missing to avoid 127.0.0.1 auth redirects in prod
+if (!hasConfig && !isLocalHost) {
+  throw new Error(
+    'Firebase config missing in production. Set VITE_FIREBASE_* env vars and add your domain to Firebase Auth Authorized domains.'
+  );
+}
 
 const app = initializeApp(hasConfig ? firebaseConfig : demoConfig);
 
@@ -45,7 +58,7 @@ const functionsRegion = typeof envRegion === 'string' && envRegion.length > 0 ? 
 export const functions = getFunctions(app, functionsRegion);
 
 // Enable Firestore offline persistence (best-effort; ignore if not available)
-if (typeof window !== 'undefined') {
+if (isBrowser) {
   enableIndexedDbPersistence(db).catch(() => {
     // Multi-tab or private mode may fail; app still works without persistence
   });
@@ -73,11 +86,25 @@ if (useEmulators) {
 
 // Initialize Analytics (only in browser)
 let analytics: Analytics | null = null;
-if (typeof window !== 'undefined' && !useEmulators) {
+if (isBrowser && !useEmulators) {
   analyticsSupported().then((ok) => {
     if (ok) analytics = getAnalytics(app);
   });
 }
 export { analytics };
+
+// Non-sensitive startup diagnostics
+try {
+  const proj = hasConfig ? firebaseConfig.projectId : 'demo-project';
+  const domain = hasConfig ? firebaseConfig.authDomain : 'localhost';
+  console.info('[Firebase]', {
+    projectId: proj,
+    authDomain: domain,
+    usingEmulators: useEmulators,
+    isLocalHost,
+  });
+} catch (e) {
+  // ignore diagnostics failures
+}
 
 export default app;
