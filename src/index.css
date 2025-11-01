@@ -8,43 +8,43 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Dark Mode (Default) */
-    --background: 160 25% 8%;
-    --foreground: 0 0% 98%;
+    /* Dark Mode (Default) — Coreum-inspired deep emerald theme */
+    --background: 158 30% 6%; /* very dark green */
+    --foreground: 0 0% 97%;
 
-    --card: 160 20% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 158 18% 10%;
+    --card-foreground: 0 0% 97%;
 
-    --popover: 160 20% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 158 18% 10%;
+    --popover-foreground: 0 0% 97%;
 
-    --primary: 160 84% 39%;
+    --primary: 152 80% 42%; /* neon emerald */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 145 80% 42%;
+    --secondary: 160 40% 22%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 160 15% 20%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 160 12% 16%;
+    --muted-foreground: 0 0% 78%; /* brighter for readability */
 
-    --accent: 160 84% 39%;
+    --accent: 152 80% 42%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 160 15% 20%;
-    --input: 160 15% 20%;
-    --ring: 160 84% 39%;
+    --border: 160 12% 22%;
+    --input: 160 12% 22%;
+    --ring: 152 80% 42%;
 
     --radius: 0.75rem;
 
-    --gradient-dark: linear-gradient(135deg, hsl(160, 25%, 8%) 0%, hsl(160, 30%, 5%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(160, 20%, 12%) 0%, hsl(160, 18%, 10%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(160, 80%, 35%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(160, 80%, 35%) 100%);
+  --gradient-dark: linear-gradient(180deg, hsl(158 30% 7%) 0%, hsl(160 28% 5%) 100%);
+  --gradient-card: linear-gradient(135deg, hsl(158 18% 12%) 0%, hsl(158 16% 9%) 100%);
+  --gradient-success: linear-gradient(135deg, hsl(152 80% 42%) 0%, hsl(152 72% 38%) 100%);
+  --gradient-primary: linear-gradient(135deg, hsl(152 80% 42%) 0%, hsl(152 72% 38%) 100%);
     
-    --shadow-glow: 0 0 40px hsl(160 84% 39% / 0.3);
+  --shadow-glow: 0 0 40px hsl(152 80% 42% / 0.35);
     --shadow-card: 0 10px 40px hsl(0 0% 0% / 0.5);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -53,7 +53,7 @@ All colors MUST be HSL.
   /* Light Mode */
   .light {
     --background: 0 0% 100%;
-    --foreground: 160 25% 10%;
+    --foreground: 160 25% 12%;
 
     --card: 0 0% 100%;
     --card-foreground: 160 25% 10%;
@@ -61,14 +61,14 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 160 25% 10%;
 
-    --primary: 160 84% 39%;
+  --primary: 152 80% 42%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 145 80% 42%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 160 10% 95%;
-    --muted-foreground: 160 5% 40%;
+  --muted: 160 12% 95%;
+  --muted-foreground: 160 8% 30%;
 
     --accent: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
@@ -80,10 +80,10 @@ All colors MUST be HSL.
     --input: 160 10% 95%;
     --ring: 160 84% 39%;
 
-    --gradient-dark: linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(160, 10%, 98%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(160, 5%, 98%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(160, 80%, 35%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(160, 80%, 35%) 100%);
+  --gradient-dark: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(160 10% 98%) 100%);
+  --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(160 5% 98%) 100%);
+  --gradient-success: linear-gradient(135deg, hsl(152 80% 42%) 0%, hsl(152 72% 38%) 100%);
+  --gradient-primary: linear-gradient(135deg, hsl(152 80% 42%) 0%, hsl(152 72% 38%) 100%);
     
     --shadow-glow: 0 0 40px hsl(160 84% 39% / 0.2);
     --shadow-card: 0 10px 40px hsl(160 25% 8% / 0.1);
@@ -98,6 +98,12 @@ All colors MUST be HSL.
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
+  }
+
+  h1, h2, h3, .display {
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -166,5 +172,13 @@ All colors MUST be HSL.
 
   .animate-spin-reverse {
     animation: spin-reverse 15s linear infinite;
+  }
+
+  /* Hero gradient inspired by Coreum visuals */
+  .gradient-hero {
+    background:
+      radial-gradient(800px 400px at 80% 25%, hsl(152 80% 30% / 0.20), transparent 60%),
+      radial-gradient(600px 300px at 15% 15%, hsl(152 80% 22% / 0.16), transparent 60%),
+      linear-gradient(180deg, hsl(158 30% 7%), hsl(160 28% 5%));
   }
 }
