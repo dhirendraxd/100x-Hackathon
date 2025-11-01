@@ -8,9 +8,14 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { getScrapedForms, deleteScrapedForm } from "@/services/formScraperService.mock";
+import { validateDocumentEnhanced, type EnhancedValidationResult, fileToBase64, formatFileSize } from "@/services/documentValidation";
+import { extractTextSmartFromBase64 } from "@/services/textExtraction";
+import { saveUserProfile, type UserProfile } from "@/services/userProfileService";
 import {
   FileText,
   Clock,
@@ -69,6 +74,65 @@ const FormProgressDashboard = () => {
   const [drafts, setDrafts] = useState<FormDraft[]>([]);
   const [uploadedForms, setUploadedForms] = useState<UploadedForm[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // Autofill Setup state
+  const [files, setFiles] = useState<Record<string, File | null>>({
+    citizenshipFront: null,
+    citizenshipBack: null,
+    passportPage: null,
+    voterId: null,
+  });
+  const [fileAnalysis, setFileAnalysis] = useState<Record<string, { meta?: EnhancedValidationResult; ocrText?: string; extracting?: boolean }>>({});
+  type ManualState = {
+    fullName?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    fatherName?: string;
+    motherName?: string;
+    permanentAddress?: {
+      province: string;
+      district: string;
+      municipality: string;
+      ward: string;
+      tole?: string;
+    };
+    temporaryAddress?: {
+      province: string;
+      district: string;
+      municipality: string;
+      ward: string;
+      tole?: string;
+    };
+    citizenshipNumber?: string;
+    citizenshipIssueDate?: string;
+    citizenshipIssueDistrict?: string;
+    passportNumber?: string;
+  };
+
+  const [manual, setManual] = useState<ManualState>({
+    fullName: "",
+    dateOfBirth: "",
+    gender: "",
+    fatherName: "",
+    motherName: "",
+    permanentAddress: {
+      province: "",
+      district: "",
+      municipality: "",
+      ward: "",
+      tole: "",
+    },
+    temporaryAddress: {
+      province: "",
+      district: "",
+      municipality: "",
+      ward: "",
+      tole: "",
+    },
+    citizenshipNumber: "",
+    citizenshipIssueDate: "",
+    citizenshipIssueDistrict: "",
+    passportNumber: "",
+  });
 
   useEffect(() => {
     // Allow guests to view local progress; no redirect
@@ -131,6 +195,142 @@ const FormProgressDashboard = () => {
     setDrafts(allDrafts);
     setUploadedForms(userForms);
     setIsLoading(false);
+  };
+
+  // Simple field extraction from OCR text
+  type ExtractedFields = Pick<ManualState, 'fullName' | 'dateOfBirth' | 'citizenshipNumber' | 'citizenshipIssueDistrict' | 'passportNumber'>;
+  const extractFieldsFromText = (text: string): ExtractedFields => {
+    const out: ExtractedFields = {};
+    try {
+      const t = text.replace(/\r/g, "\n");
+      // DOB
+      const dobMatch = t.match(/\b(\d{4}[-./]\d{1,2}[-./]\d{1,2}|\d{1,2}[-./]\d{1,2}[-./]\d{4})\b/);
+      if (dobMatch) {
+        out.dateOfBirth = dobMatch[1];
+      }
+      // Citizenship number (digits/dashes length >= 7)
+      const citMatchLabel = t.match(/Citizenship\s*(No\.?|Number)\s*[:-]?\s*([A-Za-z0-9-]{6,})/i);
+      const citMatchLoose = t.match(/\b[A-Za-z]?[0-9]{2,}[-][0-9]{2,}[-]?[0-9]{2,}\b/);
+      const citizenshipNumber = citMatchLabel?.[2] || citMatchLoose?.[0];
+      if (citizenshipNumber) {
+        out.citizenshipNumber = citizenshipNumber;
+      }
+      // Passport number (very loose)
+      const passMatch = t.match(/Passport\s*(No\.?|Number)\s*[:-]?\s*([A-Z0-9]{7,9})/i) || t.match(/\b[A-Z][0-9]{7}\b/);
+      const passportNumber = (passMatch?.[2] || passMatch?.[0])?.trim();
+      if (passportNumber) {
+        out.passportNumber = passportNumber;
+      }
+      // Issue district
+      const districtMatch = t.match(/(Issue\s*District|District)\s*[:-]?\s*([A-Za-z\p{L} ]{2,})/iu);
+      if (districtMatch) {
+        out.citizenshipIssueDistrict = districtMatch[2].trim();
+      }
+      // Name (basic): after "Name" label
+      const nameMatch = t.match(/Name\s*[:-]?\s*([-A-Za-z\p{L} .']{2,})/iu);
+      if (nameMatch) {
+        out.fullName = nameMatch[1].trim();
+      }
+    } catch {
+      // noop
+    }
+    return out;
+  };
+
+  const handleFilePick = async (key: keyof typeof files, f: File | null) => {
+    setFiles(prev => ({ ...prev, [key]: f }));
+    if (!f) return;
+    // Analyze
+    try {
+      const meta = await validateDocumentEnhanced(f);
+      setFileAnalysis(prev => ({ ...prev, [key]: { ...(prev[key] || {}), meta } }));
+      if (!meta.valid) {
+        toast.warning('Quality issues detected in uploaded file', {
+          description: meta.errors?.[0] || 'Please review warnings and consider a clearer image.',
+        });
+      }
+    } catch (e) {
+      console.warn('Validation failed', e);
+      setFileAnalysis(prev => ({ ...prev, [key]: { ...(prev[key] || {}), meta: { valid: false, errors: ['Failed to analyze'], warnings: [], metadata: { size: f.size, type: f.type } } as EnhancedValidationResult } }));
+      toast.error('Failed to analyze the uploaded file');
+    }
+    // OCR extract
+    try {
+      setFileAnalysis(prev => ({ ...prev, [key]: { ...(prev[key] || {}), extracting: true } }));
+      const b64 = await fileToBase64(f);
+      const result = await extractTextSmartFromBase64(`data:${f.type};base64,${b64}`);
+      const text = result.fullText || '';
+      setFileAnalysis(prev => ({ ...prev, [key]: { ...(prev[key] || {}), ocrText: text, extracting: false } }));
+      // Attempt mapping to manual fields (non-destructive)
+      const extracted = extractFieldsFromText(text);
+      setManual(prev => ({
+        ...prev,
+        fullName: prev.fullName || extracted.fullName || '',
+        dateOfBirth: prev.dateOfBirth || extracted.dateOfBirth || '',
+        citizenshipNumber: prev.citizenshipNumber || extracted.citizenshipNumber || '',
+        citizenshipIssueDistrict: prev.citizenshipIssueDistrict || extracted.citizenshipIssueDistrict || '',
+        passportNumber: prev.passportNumber || extracted.passportNumber || '',
+      }));
+      if (!extracted.fullName && !extracted.dateOfBirth && !extracted.citizenshipNumber && !extracted.passportNumber) {
+        toast.info('Couldn’t recognize key fields from this document. You can enter them manually.');
+      }
+    } catch (e) {
+      console.warn('OCR extract failed', e);
+      setFileAnalysis(prev => ({ ...prev, [key]: { ...(prev[key] || {}), extracting: false } }));
+      toast.error('Failed to extract text from the uploaded file');
+    }
+  };
+
+  const saveProfileFromManual = async () => {
+    if (!user) {
+      toast.error('Please sign in to save your profile');
+      return;
+    }
+    // Basic validation: require at least one meaningful field
+    const hasData = Boolean(
+      manual.fullName || manual.dateOfBirth || manual.gender || manual.fatherName || manual.motherName ||
+      manual.citizenshipNumber || manual.citizenshipIssueDate || manual.citizenshipIssueDistrict || manual.passportNumber
+    );
+    if (!hasData) {
+      toast.error('Please enter or extract at least one field before saving');
+      return;
+    }
+    // Validate date format if provided (YYYY-MM-DD)
+    if (manual.dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(manual.dateOfBirth)) {
+      toast.error('Date of Birth must be in YYYY-MM-DD format');
+      return;
+    }
+    try {
+      await saveUserProfile(user.uid, {
+        personalInfo: {
+          fullName: manual.fullName || '',
+          dateOfBirth: manual.dateOfBirth || '',
+          gender: manual.gender || '',
+          fatherName: manual.fatherName || '',
+          motherName: manual.motherName || '',
+        },
+        addressInfo: {
+          permanentAddress: {
+            province: manual.permanentAddress?.province || '',
+            district: manual.permanentAddress?.district || '',
+            municipality: manual.permanentAddress?.municipality || '',
+            ward: manual.permanentAddress?.ward || '',
+            tole: manual.permanentAddress?.tole || '',
+          },
+          temporaryAddress: manual.temporaryAddress,
+        },
+        documents: {
+          citizenshipNumber: manual.citizenshipNumber || '',
+          citizenshipIssueDate: manual.citizenshipIssueDate || '',
+          citizenshipIssueDistrict: manual.citizenshipIssueDistrict || '',
+          passportNumber: manual.passportNumber || '',
+        },
+      });
+      toast.success('Profile saved for autofill');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      toast.error(`Failed to save profile: ${msg}`);
+    }
   };
 
   const getProgressColor = (progress: number) => {
@@ -254,6 +454,10 @@ const FormProgressDashboard = () => {
             <TabsTrigger value="pending" className="gap-2">
               <Clock className="h-4 w-4" />
               Pending Forms ({drafts.length})
+            </TabsTrigger>
+            <TabsTrigger value="autofill" className="gap-2">
+              <Info className="h-4 w-4" />
+              Autofill Setup
             </TabsTrigger>
           </TabsList>
 
@@ -398,6 +602,135 @@ const FormProgressDashboard = () => {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Autofill Setup Tab */}
+          <TabsContent value="autofill" className="space-y-4">
+            <Card className="bg-card/50 backdrop-blur border-white/10">
+              <CardHeader>
+                <CardTitle className="text-white">Upload documents for Autofill</CardTitle>
+                <CardDescription>Upload your citizenship, passport, or voter ID to help us prefill your forms. We’ll analyze clarity and extract key fields. You can edit anything manually.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Citizenship Front */}
+                  <div className="space-y-2">
+                    <Label className="text-white">Citizenship (Front)</Label>
+                    <Input type="file" accept="image/*,application/pdf" onChange={(e) => handleFilePick('citizenshipFront', e.target.files?.[0] || null)} />
+                    {files.citizenshipFront && (
+                      <p className="text-xs text-gray-400">{files.citizenshipFront.name} • {formatFileSize(files.citizenshipFront.size)}</p>
+                    )}
+                    {fileAnalysis.citizenshipFront?.meta && (
+                      <div className="text-xs text-gray-300">
+                        {fileAnalysis.citizenshipFront.meta.valid ? (
+                          <span className="text-green-400">Quality checks passed</span>
+                        ) : (
+                          <span className="text-red-400">Quality issues found</span>
+                        )}
+                        <ul className="mt-1 list-disc list-inside">
+                          {fileAnalysis.citizenshipFront.meta.errors.map((e, i) => <li key={i} className="text-red-300">{e}</li>)}
+                          {fileAnalysis.citizenshipFront.meta.warnings.map((w, i) => <li key={i} className="text-yellow-300">{w}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  {/* Citizenship Back */}
+                  <div className="space-y-2">
+                    <Label className="text-white">Citizenship (Back)</Label>
+                    <Input type="file" accept="image/*,application/pdf" onChange={(e) => handleFilePick('citizenshipBack', e.target.files?.[0] || null)} />
+                    {files.citizenshipBack && (
+                      <p className="text-xs text-gray-400">{files.citizenshipBack.name} • {formatFileSize(files.citizenshipBack.size)}</p>
+                    )}
+                  </div>
+                  {/* Passport Page */}
+                  <div className="space-y-2">
+                    <Label className="text-white">Passport (Photo Page)</Label>
+                    <Input type="file" accept="image/*,application/pdf" onChange={(e) => handleFilePick('passportPage', e.target.files?.[0] || null)} />
+                    {files.passportPage && (
+                      <p className="text-xs text-gray-400">{files.passportPage.name} • {formatFileSize(files.passportPage.size)}</p>
+                    )}
+                  </div>
+                  {/* Voter ID */}
+                  <div className="space-y-2">
+                    <Label className="text-white">Voter ID</Label>
+                    <Input type="file" accept="image/*,application/pdf" onChange={(e) => handleFilePick('voterId', e.target.files?.[0] || null)} />
+                    {files.voterId && (
+                      <p className="text-xs text-gray-400">{files.voterId.name} • {formatFileSize(files.voterId.size)}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* OCR status */}
+                {(fileAnalysis.citizenshipFront?.extracting || fileAnalysis.citizenshipBack?.extracting || fileAnalysis.passportPage?.extracting || fileAnalysis.voterId?.extracting) && (
+                  <Alert className="border-blue-500/50 bg-blue-500/10">
+                    <AlertDescription className="text-blue-200">Extracting text from documents…</AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Manual + extracted fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-white">Personal Information</h3>
+                    <div className="space-y-2">
+                      <Label className="text-white">Full Name</Label>
+                      <Input value={manual.fullName || ''} onChange={e => setManual(prev => ({ ...prev, fullName: e.target.value }))} placeholder="Enter full name" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">Date of Birth</Label>
+                      <Input type="date" value={manual.dateOfBirth || ''} onChange={e => setManual(prev => ({ ...prev, dateOfBirth: e.target.value }))} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">Gender</Label>
+                      <Input value={manual.gender || ''} onChange={e => setManual(prev => ({ ...prev, gender: e.target.value }))} placeholder="male / female / other" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">Father's Name</Label>
+                      <Input value={manual.fatherName || ''} onChange={e => setManual(prev => ({ ...prev, fatherName: e.target.value }))} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">Mother's Name</Label>
+                      <Input value={manual.motherName || ''} onChange={e => setManual(prev => ({ ...prev, motherName: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-white">Document Details</h3>
+                    <div className="space-y-2">
+                      <Label className="text-white">Citizenship Number</Label>
+                      <Input value={manual.citizenshipNumber || ''} onChange={e => setManual(prev => ({ ...prev, citizenshipNumber: e.target.value }))} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">Citizenship Issue Date</Label>
+                      <Input type="date" value={manual.citizenshipIssueDate || ''} onChange={e => setManual(prev => ({ ...prev, citizenshipIssueDate: e.target.value }))} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">Citizenship Issue District</Label>
+                      <Input value={manual.citizenshipIssueDistrict || ''} onChange={e => setManual(prev => ({ ...prev, citizenshipIssueDistrict: e.target.value }))} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">Passport Number</Label>
+                      <Input value={manual.passportNumber || ''} onChange={e => setManual(prev => ({ ...prev, passportNumber: e.target.value }))} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button onClick={saveProfileFromManual} disabled={!user}>Save to Profile</Button>
+                  {!user && (
+                    <Alert className="border-yellow-500/50 bg-yellow-500/10">
+                      <AlertDescription className="text-yellow-200">Sign in to persist these details for autofill.</AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                {/* OCR preview (optional) */}
+                {(fileAnalysis.citizenshipFront?.ocrText || fileAnalysis.passportPage?.ocrText || fileAnalysis.voterId?.ocrText) && (
+                  <div className="pt-2 text-xs text-gray-400">
+                    <p className="mb-1">Extracted text preview (for troubleshooting):</p>
+                    <pre className="whitespace-pre-wrap max-h-48 overflow-auto bg-black/30 p-2 rounded border border-white/10">{(fileAnalysis.citizenshipFront?.ocrText || '') + "\n" + (fileAnalysis.passportPage?.ocrText || '') + "\n" + (fileAnalysis.voterId?.ocrText || '')}</pre>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 

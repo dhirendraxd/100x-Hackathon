@@ -236,6 +236,91 @@ const FormFiller = () => {
     });
   };
 
+  // Enhanced autofill that also maps to NID-specific fields when applicable
+  const enableAutofill = () => {
+    if (!autofillData) return;
+
+    // Helper to split a full name into first/middle/last conservatively
+    const splitName = (full?: string) => {
+      const parts = (full || '').trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return { first: '', middle: '', last: '' };
+      if (parts.length === 1) return { first: parts[0], middle: '', last: '' };
+      if (parts.length === 2) return { first: parts[0], middle: '', last: parts[1] };
+      return { first: parts[0], middle: parts.slice(1, -1).join(' '), last: parts[parts.length - 1] };
+    };
+
+    // First apply general fields
+    setFormData(prev => ({
+      ...prev,
+      fullName: autofillData.fullName || prev.fullName,
+      dateOfBirth: autofillData.dateOfBirth || prev.dateOfBirth,
+      gender: autofillData.gender || prev.gender,
+      email: autofillData.email || prev.email,
+      phone: autofillData.phone || prev.phone,
+      fatherName: autofillData.fatherName || prev.fatherName,
+      motherName: autofillData.motherName || prev.motherName,
+    }));
+
+    // If NID is selected, map known profile fields into NID-specific structure (fill only empty fields)
+    if (isNIDForm) {
+      setNidDetails(prev => {
+        const father = splitName(autofillData.fatherName);
+        const mother = splitName(autofillData.motherName);
+        const self = splitName(autofillData.fullName);
+
+        return {
+          ...prev,
+          // Identification
+          firstName: prev.firstName || self.first,
+          middleName: prev.middleName || self.middle,
+          lastName: prev.lastName || self.last,
+          dobAD: prev.dobAD || autofillData.dateOfBirth || prev.dobAD,
+          citizenshipNo: prev.citizenshipNo || autofillData.citizenshipNumber || prev.citizenshipNo,
+          citizenshipIssueDate: prev.citizenshipIssueDate || autofillData.citizenshipIssueDate || prev.citizenshipIssueDate,
+          citizenshipIssueDistrict: prev.citizenshipIssueDistrict || autofillData.citizenshipIssueDistrict || prev.citizenshipIssueDistrict,
+
+          // Permanent Address
+          permState: prev.permState || autofillData.permanentProvince || prev.permState,
+          permDistrict: prev.permDistrict || autofillData.permanentDistrict || prev.permDistrict,
+          permMunicipality: prev.permMunicipality || autofillData.permanentMunicipality || prev.permMunicipality,
+          permWard: prev.permWard || autofillData.permanentWard || prev.permWard,
+          permVillage: prev.permVillage || autofillData.permanentTole || prev.permVillage,
+          permMobile: prev.permMobile || autofillData.phone || prev.permMobile,
+
+          // Temporary Address
+          tempState: prev.tempState || autofillData.temporaryProvince || prev.tempState,
+          tempDistrict: prev.tempDistrict || autofillData.temporaryDistrict || prev.tempDistrict,
+          tempMunicipality: prev.tempMunicipality || autofillData.temporaryMunicipality || prev.tempMunicipality,
+          tempWard: prev.tempWard || autofillData.temporaryWard || prev.tempWard,
+          tempVillage: prev.tempVillage || autofillData.temporaryTole || prev.tempVillage,
+
+          // Family
+          fatherFirstName: prev.fatherFirstName || father.first,
+          fatherMiddleName: prev.fatherMiddleName || father.middle,
+          fatherLastName: prev.fatherLastName || father.last,
+          motherFirstName: prev.motherFirstName || mother.first,
+          motherMiddleName: prev.motherMiddleName || mother.middle,
+          motherLastName: prev.motherLastName || mother.last,
+        };
+      });
+    }
+
+    // Persist updated state to local storage for recovery
+    setTimeout(() => {
+      try {
+        const latestForm = JSON.stringify({ ...formData });
+        const latestNid = JSON.stringify({ ...nidDetails });
+        localStorage.setItem('formData', latestForm);
+        localStorage.setItem('nidDetails', latestNid);
+      } catch { /* noop */ }
+    }, 0);
+
+    toast.success('Autofill applied', {
+      description: isNIDForm ? 'Profile details mapped into your NID form. Please review before submitting.' : 'Profile details filled. Review and update as needed.',
+      icon: <Sparkles className="h-4 w-4" />,
+    });
+  };
+
   // Email notification helpers (Renewal & Status)
   const sendRenewalEmail = async () => {
     const to = (autofillData?.email || user?.email || '').trim();
@@ -297,29 +382,28 @@ const FormFiller = () => {
   };
 
   const saveProgress = async () => {
-    // Save to localStorage for quick recovery
-    localStorage.setItem("formData", JSON.stringify(formData));
-    localStorage.setItem("nidDetails", JSON.stringify(nidDetails));
-    
-    // Also save to Firebase Firestore
+    // Require login for saving progress
+    if (!user) {
+      toast.error('Please log in to save your progress.');
+      return;
+    }
+
+    // Persist to Firestore for authenticated users
     try {
       await saveFormDraft(
-        user?.uid || 'anonymous',
+        user.uid,
         formData.service || 'general',
         { ...formData, nidDetails }
       );
-      
-      if (user) {
-        toast.success("Progress saved to your dashboard!");
-      } else {
-        toast.success("Progress saved locally!");
-        toast.info("Log in to save forms to your dashboard", {
-          duration: 5000,
-        });
-      }
+      toast.success("Progress saved to your dashboard!");
+      // Optional: also mirror to localStorage for quick recovery after refresh
+      try {
+        localStorage.setItem("formData", JSON.stringify(formData));
+        localStorage.setItem("nidDetails", JSON.stringify(nidDetails));
+      } catch { /* noop */ }
     } catch (error) {
       console.error('Failed to save to Firestore:', error);
-      toast.success("Progress saved locally!");
+      toast.error("Failed to save. Please try again.");
     }
   };
 
@@ -389,6 +473,10 @@ const FormFiller = () => {
   };
 
   const downloadForm = () => {
+    if (!user) {
+      toast.error('Please log in to download your form.');
+      return;
+    }
     if (!formData.service || !formData.fullName) {
       toast.error("Please fill in at least service type and full name");
       return;
@@ -503,21 +591,26 @@ const FormFiller = () => {
             </div>
           )}
 
-          {/* Automated Autofill - Coming Soon */}
+          {/* Automated Autofill - Active for users with saved profile; NID gets deeper mapping */}
           {formData.service && (
             <Alert className="mb-6 flex items-center gap-3 border-dashed">
               <Sparkles className="h-4 w-4 text-primary" />
               <div className="flex-1">
                 <div className="font-semibold">Automated Autofill</div>
                 <AlertDescription>
-                  Coming soon: we'll auto-fill this form from your saved profile and documents.
+                  {autofillAvailable
+                    ? (isNIDForm
+                        ? 'Use your saved profile to prefill NID-specific fields (name split, address, citizenship, parents).'
+                        : 'Use your saved profile to prefill common fields (name, DOB, contacts).')
+                    : 'Save your profile details to enable one-click autofill here.'}
                 </AlertDescription>
               </div>
-              <Button variant="secondary" disabled>
+              <Button
+                variant="secondary"
+                disabled={!autofillAvailable}
+                onClick={enableAutofill}
+              >
                 Enable Autofill
-                <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                  Coming soon
-                </span>
               </Button>
             </Alert>
           )}
@@ -1220,6 +1313,7 @@ const FormFiller = () => {
                   ) : (
                     <Button
                       onClick={downloadForm}
+                      disabled={!user}
                       className="ml-auto bg-gradient-success hover:shadow-glow"
                     >
                       <Download className="w-4 h-4 mr-2" /> Download Form
@@ -1235,17 +1329,23 @@ const FormFiller = () => {
                 {showAllFields && (
                   <Button
                     onClick={downloadForm}
+                    disabled={!user}
                     className="bg-gradient-success hover:shadow-glow"
                   >
                     <Download className="w-4 h-4 mr-2" /> Download Form
                   </Button>
                 )}
-                <Button onClick={saveProgress} variant="outline">
+                <Button onClick={saveProgress} variant="outline" disabled={!user}>
                   <Save className="w-4 h-4 mr-2" /> Save Progress
                 </Button>
                 <Button onClick={resetForm} variant="outline">
                   <RotateCcw className="w-4 h-4 mr-2" /> Reset Form
                 </Button>
+                {!user && (
+                  <span className="text-xs text-muted-foreground ml-auto">
+                    Log in to enable Save and Download
+                  </span>
+                )}
               </div>
             </CardContent>
           </Card>
