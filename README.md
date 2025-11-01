@@ -135,6 +135,46 @@ netlify deploy
 
 - Deploy callable functions via Firebase CLI after configuring your project and secrets.
 
+Local development (Functions Emulator):
+
+1. Install deps
+
+```bash
+cd functions
+npm install
+```
+
+1. Start only Functions emulator (defaults to port 5002 in this repo)
+
+```bash
+npx firebase-tools emulators:start --only functions --project hackathon-5e406
+```
+
+1. Frontend will connect to the Functions emulator when `VITE_USE_FIREBASE_EMULATORS=true` and will honor `VITE_FUNCTIONS_EMULATOR_PORT` (defaults to 5001; we set 5002 here). Add to your `.env`:
+
+```env
+VITE_USE_FIREBASE_EMULATORS=true
+VITE_FUNCTIONS_EMULATOR_PORT=5002
+```
+
+Optional: Quick curl test against the Functions emulator
+
+```bash
+# validateDocument (returns structured results; token optional in emulator)
+curl -s -X POST \
+   -H "Content-Type: application/json" \
+   -H "Authorization: Bearer owner" \
+   -d '{"data": {"imageBase64": "", "documentType": "Passport Photo"}}' \
+   http://127.0.0.1:5002/hackathon-5e406/us-central1/validateDocument | jq .
+
+# sendEmailNotification (will error if RESEND_API_KEY not set in emulator env)
+curl -s -X POST \
+   -H "Content-Type: application/json" \
+   -H "Authorization: Bearer owner" \
+   -d '{"data": {"to":"test@example.com","type":"renewal","data":{"serviceName":"NID"}}}' \
+   http://127.0.0.1:5002/hackathon-5e406/us-central1/sendEmailNotification | jq .
+```
+
 ### Vercel configuration (SPA routing + env)
 
 This app is a Vite SPA. We've added `vercel.json` to ensure client-side routing works and Vercel serves the built `dist` folder.
@@ -152,6 +192,7 @@ Required frontend environment variables (set in Vercel Project → Settings → 
 - `VITE_FIREBASE_MESSAGING_SENDER_ID`
 - Optional: `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MEASUREMENT_ID`, `VITE_FIREBASE_DATABASE_URL`
 - Optional: `VITE_USE_FIREBASE_EMULATORS` should be omitted or set to `false` in production
+   - If you use a non-default Functions emulator port locally, set `VITE_FUNCTIONS_EMULATOR_PORT`
 
 Notes:
 

@@ -39,7 +39,10 @@ const app = initializeApp(hasConfig ? firebaseConfig : demoConfig);
 // Initialize Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const functions = getFunctions(app);
+// Resolve Functions region from env, ensure it's a string
+const envRegion = (import.meta as unknown as { env?: Record<string, unknown> }).env?.VITE_FIREBASE_FUNCTIONS_REGION;
+const functionsRegion = typeof envRegion === 'string' && envRegion.length > 0 ? envRegion : 'us-central1';
+export const functions = getFunctions(app, functionsRegion);
 
 // Enable Firestore offline persistence (best-effort; ignore if not available)
 if (typeof window !== 'undefined') {
@@ -61,7 +64,8 @@ if (useEmulators) {
     // Emulator connection failed or already connected; safe to ignore in production build
   }
   try {
-    connectFunctionsEmulator(functions, '127.0.0.1', 5001);
+    const fnPort = Number(import.meta.env.VITE_FUNCTIONS_EMULATOR_PORT || 5001);
+    connectFunctionsEmulator(functions, '127.0.0.1', fnPort);
   } catch (e) {
     // Emulator connection failed or already connected; safe to ignore in production build
   }

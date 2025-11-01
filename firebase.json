@@ -1,4 +1,7 @@
 {
+  "functions": {
+    "source": "functions"
+  },
   "firestore": {
     "database": "(default)",
     "location": "nam5",
@@ -12,9 +15,11 @@
     "firestore": {
       "port": 8082
     },
+    "functions": {
+      "port": 5002
+    },
     "ui": {
-      "enabled": true,
-      "port": 4000
+      "enabled": false
     },
     "singleProjectMode": true
   }
