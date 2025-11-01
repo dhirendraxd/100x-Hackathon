@@ -12,6 +12,7 @@ import FormFiller from "./pages/FormFiller";
 import FormProgressDashboard from "./pages/FormProgressDashboard";
 import SmartSearch from "./pages/SmartSearch";
 import NotFound from "./pages/NotFound";
+import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="/form-filler" element={<FormFiller />} />
             <Route path="/form-progress" element={<FormProgressDashboard />} />
+            <Route path="/about" element={<About />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Save, RotateCcw, Download, ChevronRight, Lightbulb, Sparkles, ListChecks, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -514,7 +514,7 @@ const FormFiller = () => {
         .meta{color:#666;font-size:12px;margin-bottom:16px}
         </style></head><body>
         <h1>${title}</h1>
-        <div class="meta">Generated at ${createdAt} • User: ${user.email || user.uid}</div>
+        <div class="meta">Generated at ${createdAt} • User: ${(user?.email || user?.uid || 'Guest')}</div>
         <h2>Personal Details</h2>
         <table><tbody>
           <tr><th>Full Name</th><td>${formData.fullName || ''}</td></tr>

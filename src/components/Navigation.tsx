@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Home, User, Upload } from "lucide-react";
+import { Menu, X, Home, User, Upload, Info } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -23,6 +23,7 @@ const Navigation = () => {
   const navItems = [
     { path: "/", label: t('nav.home'), icon: Home },
     { path: "/form-filler", label: "Fill Forms", icon: Upload },
+    { path: "/about", label: "About", icon: Info },
   ];
 
   const isActive = (path: string) => location.pathname === path;
