@@ -57,7 +57,7 @@ The only requirement is having Node.js & npm installed - install with nvm if nee
    npm run dev
    ```
 
-The app will be available at <http://localhost:8080>
+The app will be available at <http://localhost:5173>
 
 ## 🧪 Available Scripts
 
@@ -134,6 +134,29 @@ netlify deploy
 ### Backend (Firebase Functions)
 
 - Deploy callable functions via Firebase CLI after configuring your project and secrets.
+
+### Vercel configuration (SPA routing + env)
+
+This app is a Vite SPA. We've added `vercel.json` to ensure client-side routing works and Vercel serves the built `dist` folder.
+
+- Build command: `npm run build`
+- Output directory: `dist`
+- SPA fallback: All non-file routes rewrite to `/` so React Router can handle them
+
+Required frontend environment variables (set in Vercel Project → Settings → Environment Variables):
+
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_APP_ID`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- Optional: `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MEASUREMENT_ID`, `VITE_FIREBASE_DATABASE_URL`
+- Optional: `VITE_USE_FIREBASE_EMULATORS` should be omitted or set to `false` in production
+
+Notes:
+
+- Backend secrets like `RESEND_API_KEY` and `HUGGING_FACE_ACCESS_TOKEN` should remain in Firebase Functions (not Vercel env) if you're keeping Functions on Firebase.
+- The frontend calls your Firebase Callable Functions via the Firebase SDK, so hosting the UI on Vercel and Functions on Firebase works out of the box.
 
 ## 🤝 Contributing
 
