@@ -124,8 +124,8 @@ const FormFiller = () => {
   // Email notification helpers (Renewal & Status)
   const sendRenewalEmail = async () => {
     const to = (autofillData?.email || user?.email || '').trim();
-    if (!to) {
-      toast.error('No email available for notifications');
+    if (!to || !to.includes('@')) {
+      toast.error('No valid email available for notifications');
       return;
     }
     try {
@@ -140,15 +140,16 @@ const FormFiller = () => {
       });
       toast.success('Renewal reminder email sent!');
     } catch (e) {
-      console.error(e);
-      toast.error('Failed to send renewal email');
+      const errorMsg = e instanceof Error ? e.message : 'Unknown error';
+      console.error('Renewal email error:', errorMsg);
+      toast.error(`Failed to send renewal email: ${errorMsg}`);
     }
   };
 
   const sendStatusEmail = async () => {
     const to = (autofillData?.email || user?.email || '').trim();
-    if (!to) {
-      toast.error('No email available for notifications');
+    if (!to || !to.includes('@')) {
+      toast.error('No valid email available for notifications');
       return;
     }
     try {
@@ -166,8 +167,9 @@ const FormFiller = () => {
       });
       toast.success('Status update email sent!');
     } catch (e) {
-      console.error(e);
-      toast.error('Failed to send status email');
+      const errorMsg = e instanceof Error ? e.message : 'Unknown error';
+      console.error('Status email error:', errorMsg);
+      toast.error(`Failed to send status email: ${errorMsg}`);
     }
   };
 
@@ -232,6 +234,31 @@ const FormFiller = () => {
   };
 
   const nextStep = () => {
+    // Validate current step before proceeding
+    if (currentStep === 1 && !formData.service) {
+      toast.error("Please select a service type");
+      return;
+    }
+    
+    if (currentStep === 2) {
+      if (!formData.fullName || !formData.dateOfBirth || !formData.gender) {
+        toast.error("Please fill in all required fields");
+        return;
+      }
+    }
+    
+    if (currentStep === 3) {
+      if (!formData.email || !formData.phone) {
+        toast.error("Please fill in email and phone number");
+        return;
+      }
+      // Basic email validation
+      if (!formData.email.includes('@')) {
+        toast.error("Please enter a valid email address");
+        return;
+      }
+    }
+    
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }

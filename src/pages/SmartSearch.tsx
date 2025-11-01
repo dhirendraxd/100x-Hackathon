@@ -254,7 +254,12 @@ export default function SmartSearch() {
       }
       
     } catch (error) {
-      toast.error('Failed to analyze document');
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Document analysis error:', errorMsg);
+      toast.error('Failed to analyze document', {
+        description: errorMsg,
+        duration: 5000,
+      });
       setUploadedDocs(prev => ({
         ...prev,
         [formId]: prev[formId].filter(uf => uf.file !== file)

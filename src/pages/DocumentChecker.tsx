@@ -56,6 +56,7 @@ const DocumentChecker = () => {
     }
 
     setIsChecking(true);
+    setResults([]); // Clear previous results
 
     try {
       // Basic file validation

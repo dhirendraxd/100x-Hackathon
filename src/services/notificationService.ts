@@ -23,18 +23,30 @@ export interface StatusData {
 }
 
 export async function sendRenewalReminder(toEmail: string, data: RenewalData) {
+  if (!toEmail || !toEmail.includes('@')) {
+    throw new Error('Invalid email address');
+  }
   const call = httpsCallable(functions, 'sendEmailNotification');
   const payload = { to: toEmail, type: 'renewal' as NotificationType, data };
   return call(payload);
 }
 
 export async function sendStatusUpdate(toEmail: string, data: StatusData) {
+  if (!toEmail || !toEmail.includes('@')) {
+    throw new Error('Invalid email address');
+  }
   const call = httpsCallable(functions, 'sendEmailNotification');
   const payload = { to: toEmail, type: 'status' as NotificationType, data };
   return call(payload);
 }
 
 export async function sendCustomNotification(toEmail: string, subject: string, html: string) {
+  if (!toEmail || !toEmail.includes('@')) {
+    throw new Error('Invalid email address');
+  }
+  if (!subject || !html) {
+    throw new Error('Subject and HTML content are required');
+  }
   const call = httpsCallable(functions, 'sendEmailNotification');
   const payload = { to: toEmail, type: 'custom' as NotificationType, subject, html };
   return call(payload);
