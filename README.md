@@ -1,4 +1,4 @@
-# Form Mitra Smart (SarkarSevaSaathi)
+# Form Mitra Smart 
 
 Government document validation and form-filling application helping citizens get their paperwork right the first time.
 
