@@ -4,7 +4,7 @@ import ParticleBackground from "@/components/ParticleBackground";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ExternalLink, Users, Trophy, Rocket } from "lucide-react";
+import { ExternalLink, Users, Trophy, Rocket, Github, Linkedin } from "lucide-react";
 
 const About = () => {
   return (
@@ -13,6 +13,9 @@ const About = () => {
       <section className="relative min-h-[60vh] gradient-hero">
         <Navigation />
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-28 pb-12">
+          <span className="inline-block px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-foreground/80 text-xs sm:text-sm font-medium backdrop-blur-sm mb-3">
+            100x Hackathon Project
+          </span>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
             <span className="text-white">About </span>
             <span className="gradient-text-green">Form Mitra Smart</span>
@@ -22,7 +25,7 @@ const About = () => {
             It blends a polished React + TypeScript front‑end (Vite) with Firebase (Auth, Firestore, Storage, Cloud Functions),
             and includes an AI‑assisted experience for field hints and document checks.
           </p>
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6 flex flex-wrap gap-3">
             <Link to="/search">
               <Button size="lg" className="gap-2">Get Started</Button>
             </Link>
@@ -30,6 +33,18 @@ const About = () => {
               <Button size="lg" variant="outline" className="gap-2">
                 Live Demo
                 <ExternalLink className="h-4 w-4" />
+              </Button>
+            </a>
+            <a href="https://github.com/dhirendraxd/100x-Hackathon" target="_blank" rel="noreferrer">
+              <Button size="lg" variant="outline" className="gap-2">
+                GitHub Repo
+                <Github className="h-4 w-4" />
+              </Button>
+            </a>
+            <a href="https://www.linkedin.com/feed/" target="_blank" rel="noreferrer">
+              <Button size="lg" variant="outline" className="gap-2">
+                LinkedIn Post
+                <Linkedin className="h-4 w-4" />
               </Button>
             </a>
           </div>
@@ -80,7 +95,29 @@ const About = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-gray-300 text-sm leading-relaxed">
-              <p>rajiv, dhirendra, ritendra, shishir</p>
+              <ul className="list-disc ml-5 space-y-1">
+                <li>
+                  <a href="https://github.com/Shishirjoshi" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    Shishir
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/rajivsthh" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    Rajiv
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/dhirendraxd" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    Dhirendra
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/RitenTam" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    Riten
+                  </a>
+                </li>
+              </ul>
+              <p className="mt-3 text-xs text-muted-foreground">Team: Control BIts • 100x Hackathon</p>
             </CardContent>
           </Card>
         </div>

@@ -2,11 +2,21 @@
 
 Government document validation and form-filling application helping citizens get their paperwork right the first time.
 
+• Built at the 100x Hackathon by team Control BIts
+
+• Live Demo: https://100x-hackathon.vercel.app/
+
 ## 🚀 Features
 
 - AI Document Validation: Upload government documents and verify they meet official requirements using AI-powered checks
-- Smart Form Filling: Intelligent suggestions and real-time validation
-- Progress Saving: Save your progress and resume later
+- Smart Form Filling with Hints: Concise, context-aware tips per field to reduce mistakes
+- Next Steps: Shows what to do after filling, tailored to the selected service (e.g., NID, Passport)
+- Document Quality Precheck: Brightness, resolution, and type checks before uploading
+- Profile-aware: Logged-in users won’t be prompted for documents they’ve already uploaded
+- Progress Saving: Save your draft and resume later (Dashboard → Pending)
+- Submissions Dashboard: Track submitted forms and download generated summaries
+- Email Notifications: Optional status and renewal reminders via Firebase Functions + Resend
+- Demo Mode: Explore without logging in; drafts and submissions are stored locally
 
 ## 🛠️ Tech Stack
 
@@ -18,6 +28,8 @@ Government document validation and form-filling application helping citizens get
 - AI: Hugging Face models for document validation (called from Firebase Functions)
 - State Management: React Query + localStorage
 
+
+
 ## 📦 Installation
 
 The only requirement is having Node.js & npm installed - install with nvm if needed.
@@ -27,8 +39,8 @@ The only requirement is having Node.js & npm installed - install with nvm if nee
 1. Clone the repository
 
    ```bash
-   git clone https://github.com/dhirendraxd/form-mitra-smart.git
-   cd form-mitra-smart
+   git clone https://github.com/dhirendraxd/100x-Hackathon.git
+   cd 100x-Hackathon
    ```
 
 2. Install dependencies
@@ -72,7 +84,7 @@ npm run lint        # Run ESLint
 ## 🗂️ Project Structure
 
 ```txt
-form-mitra-smart/
+100x-Hackathon/
 ├── src/
 │   ├── pages/              # Route components
 │   ├── components/         # Reusable components (shadcn/ui in components/ui)
@@ -216,11 +228,21 @@ This project is licensed under the MIT License.
 - Built with shadcn/ui
 - Firebase
 - AI models from Hugging Face
+ - Built at the 100x Hackathon by team Control BIts
+
+## � Project Contributors
+
+- Shishir — https://github.com/Shishirjoshi
+- Rajiv — https://github.com/rajivsthh
+- Dhirendra — https://github.com/dhirendraxd
+- Riten — https://github.com/RitenTam
+
+Team: Control BIts
 
 ## 📧 Contact
 
-Project maintained by [dhirendraxd](https://github.com/dhirendraxd)
+Maintainer: [dhirendraxd](https://github.com/dhirendraxd)
 
 ---
 
-Made with ♥ for Indian Citizens
+Made with ♥ at the 100x Hackathon by Control BIts
