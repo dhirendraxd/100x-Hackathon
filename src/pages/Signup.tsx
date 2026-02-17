@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { useAuthContext } from '@/contexts/AuthContext';
 import ParticleBackground from '@/components/ParticleBackground';
+import SEO from '@/components/SEO';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -64,6 +65,12 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen bg-gradient-dark relative flex items-center justify-center p-4">
+  <SEO
+    title="Sign Up"
+    description="Create your Form Mitra Smart account to save documents, autofill details, and track government form submissions."
+    path="/signup"
+    noindex
+  />
   <ParticleBackground />
       
       <Card className="w-full max-w-md bg-black/40 backdrop-blur-xl border-border shadow-card relative z-10">

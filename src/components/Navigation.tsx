@@ -1,11 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Home, User, Upload, Info } from "lucide-react";
+import { Menu, X, Home, User, Info, BookOpen, FileCheck } from "lucide-react";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { ThemeToggle } from "./ThemeToggle";
-import LocationDetector from "./LocationDetector";
 import { useTranslation } from 'react-i18next';
 
 const Navigation = () => {
@@ -22,7 +19,8 @@ const Navigation = () => {
 
   const navItems = [
     { path: "/", label: t('nav.home'), icon: Home },
-    { path: "/form-filler", label: "Fill Forms", icon: Upload },
+    { path: "/form-library", label: "Form Library", icon: BookOpen },
+    { path: "/document-checker", label: "Document Checker", icon: FileCheck },
     { path: "/about", label: "About", icon: Info },
   ];
 
@@ -72,20 +70,22 @@ const Navigation = () => {
             {/* Auth Button - Single Join Now */}
             {!user && (
               <Link to="/signup">
-                <Button variant="ghost" size="sm" className="gap-1.5 sm:gap-2 text-muted-foreground hover:text-foreground text-xs sm:text-sm">
-                  <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  <span>{t('nav.joinNow')}</span>
-                </Button>
+                <span className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground">
+                  {t('nav.joinNow')}
+                </span>
               </Link>
             )}
             
             {/* Language Switcher */}
-            <Button variant="ghost" size="sm" onClick={toggleLang} className="text-xs sm:text-sm">
+            {!user && <span className="text-muted-foreground">|</span>}
+            <button
+              type="button"
+              onClick={toggleLang}
+              className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+            >
               {currentLang === 'en' ? 'NE' : 'EN'}
-            </Button>
+            </button>
 
-            {/* Theme Toggle */}
-            <ThemeToggle />
           </div>
 
           {/* Mobile Menu Button */}
@@ -132,25 +132,24 @@ const Navigation = () => {
               )}
 
               {/* Language Switcher Mobile */}
-              <Button variant="outline" onClick={toggleLang} className="w-full text-sm sm:text-base py-2.5 sm:py-3">
-                {currentLang === 'en' ? 'Switch to Nepali' : 'Switch to English'}
-              </Button>
-
-              {/* Theme Toggle Mobile */}
-              <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-border">
-                <span className="text-sm sm:text-base text-foreground">Theme</span>
-                <ThemeToggle />
-              </div>
+              <button
+                type="button"
+                onClick={toggleLang}
+                className="w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-muted-foreground hover:text-foreground"
+              >
+                {currentLang === 'en' ? 'NE' : 'EN'}
+              </button>
 
               {/* Auth button - Single Join Now */}
               {!user && (
                 <div className="border-t border-border/50 pt-3 sm:pt-4 mt-3 sm:mt-4">
                   <p className="text-xs text-muted-foreground mb-2 sm:mb-3 px-2">Save your progress:</p>
-                  <Link to="/signup" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full gap-2 justify-start text-sm sm:text-base text-muted-foreground py-2.5 sm:py-3">
-                      <User className="w-4 h-4" />
-                      Join Now
-                    </Button>
+                  <Link
+                    to="/signup"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-muted-foreground hover:text-foreground"
+                  >
+                    {t('nav.joinNow')}
                   </Link>
                 </div>
               )}

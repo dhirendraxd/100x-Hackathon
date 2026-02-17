@@ -28,6 +28,7 @@ import { nepalGovForms } from "@/data/nepalGovForms";
 import { DEMO_MODE } from "@/lib/config";
 import { getAutofillData, type AutofillData } from "@/services/userProfileService";
 import { getProgressMessage } from "@/services/fieldHintService";
+import SEO from "@/components/SEO";
 
 type FormData = {
   service: string;
@@ -637,6 +638,11 @@ const FormFiller = () => {
 
   return (
     <div className="min-h-screen bg-gradient-dark relative">
+  <SEO
+    title="Smart Form Filler"
+    description="Fill Nepal government forms with guided hints, save drafts, and reduce submission errors using Form Mitra Smart."
+    path="/form-filler"
+  />
   <ParticleBackground />
       <Navigation />
       <div className="pt-28 pb-20 px-4">

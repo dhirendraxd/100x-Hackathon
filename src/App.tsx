@@ -13,6 +13,14 @@ import FormProgressDashboard from "./pages/FormProgressDashboard";
 import SmartSearch from "./pages/SmartSearch";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
+import FormLibrary from "./pages/FormLibrary";
+import FormViewer from "./pages/FormViewer";
+import DocumentChecker from "./pages/DocumentChecker";
+import Resources from "./pages/Resources";
+import Faq from "./pages/Faq";
+import HelpCenter from "./pages/HelpCenter";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +41,14 @@ const App = () => (
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="/form-filler" element={<FormFiller />} />
             <Route path="/form-progress" element={<FormProgressDashboard />} />
+            <Route path="/form-library" element={<FormLibrary />} />
+            <Route path="/form-viewer/:formId" element={<FormViewer />} />
+            <Route path="/document-checker" element={<DocumentChecker />} />
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/faq" element={<Faq />} />
+            <Route path="/help-center" element={<HelpCenter />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/about" element={<About />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

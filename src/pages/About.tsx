@@ -5,10 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ExternalLink, Users, Trophy, Rocket, Github, Linkedin } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const About = () => {
   return (
     <div className="min-h-screen relative overflow-hidden">
+      <SEO
+        title="About Form Mitra Smart"
+        description="Learn about Form Mitra Smart, the 100x Hackathon project that simplifies Nepal government form discovery, document checks, and guided form completion."
+        path="/about"
+      />
       <ParticleBackground />
       <section className="relative min-h-[60vh] gradient-hero">
         <Navigation />

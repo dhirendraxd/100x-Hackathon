@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 
 const FormViewer = () => {
   const { formId } = useParams<{ formId: string }>();
@@ -201,6 +202,11 @@ const FormViewer = () => {
 
   return (
     <div className="min-h-screen bg-gradient-dark">
+  <SEO
+    title={form?.name ? `${form.name} - Form Viewer` : "Form Viewer"}
+    description={form?.description || "View detailed government form sections, fields, and guidance."}
+    path={formId ? `/form-viewer/${formId}` : "/form-library"}
+  />
   <Navigation />
   <div className="h-20 md:h-28" />
 

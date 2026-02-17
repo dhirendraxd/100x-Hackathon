@@ -8,13 +8,34 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuthContext } from "@/contexts/AuthContext";
 import LocationDetector from "@/components/LocationDetector";
 import { useTranslation } from 'react-i18next';
+import SEO from "@/components/SEO";
 
 const Home = () => {
   const { user } = useAuthContext();
   const { t } = useTranslation('common');
+  const homeJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Form Mitra Smart",
+    applicationCategory: "GovernmentApplication",
+    operatingSystem: "Web",
+    url: "https://100x-hackathon.vercel.app/",
+    description: "AI-assisted Nepal government form guidance with document checks and smart form filling.",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+  <SEO
+    title="AI Government Form Assistant"
+    description="Discover required Nepal government forms, validate your documents, and fill applications with smart guidance in one place."
+    path="/"
+    jsonLd={homeJsonLd}
+  />
   <ParticleBackground />
       
       <section className="relative min-h-screen gradient-hero">

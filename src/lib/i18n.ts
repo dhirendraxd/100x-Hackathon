@@ -201,7 +201,11 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: (typeof window !== 'undefined' && (localStorage.getItem('lang') || navigator.language.startsWith('ne') ? 'ne' : 'en')) || 'en',
+    lng: (() => {
+      if (typeof window === 'undefined') return 'en';
+      const savedLang = localStorage.getItem('lang');
+      return savedLang === 'ne' ? 'ne' : 'en';
+    })(),
     fallbackLng: 'en',
     ns: ['common'],
     defaultNS: 'common',

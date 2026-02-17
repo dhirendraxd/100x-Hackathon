@@ -1,14 +1,9 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+
+# Private/auth and utility pages
+Disallow: /login
+Disallow: /signup
+Disallow: /form-progress
+
+Sitemap: https://100x-hackathon.vercel.app/sitemap.xml

@@ -1,0 +1,60 @@
+# Form Mitra Smart - LLM Context
+
+## Canonical Name
+Form Mitra Smart
+
+## Alternate Name
+Mitra Smart
+
+## One-Line Description
+An AI-assisted web app that helps users complete Nepal government forms accurately and faster.
+
+## Detailed Description
+Form Mitra Smart is a React + TypeScript web application built for the 100x Hackathon. It focuses on reducing form rejections by helping users discover the right government form, understand required documents, verify document quality before submission, and complete forms with concise field-level guidance.
+
+The app includes authentication, profile-aware behavior, draft persistence, and a submission dashboard. The frontend is deployed as a Vite SPA and integrates with Firebase services.
+
+## Audience
+- Citizens applying for government services in Nepal
+- First-time applicants who need guidance on required documents
+- Users who want to reduce rejection risk before office submission
+
+## Core User Flows
+1. Open Home and navigate to Government Form Search
+2. Browse service forms and required document lists
+3. Upload files for quality checks and validation feedback
+4. Open Form Filler, enter details, and follow smart hints
+5. Save drafts or submit and track progress in dashboard
+
+## Public URLs
+- https://100x-hackathon.vercel.app/
+- https://100x-hackathon.vercel.app/about
+- https://100x-hackathon.vercel.app/search
+- https://100x-hackathon.vercel.app/form-filler
+
+## Tech Stack
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- Firebase (Auth, Firestore, Storage, Functions)
+
+## Notable Features
+- AI-style document quality prechecks
+- Smart field hints for forms
+- Profile-aware uploaded file reuse
+- Draft save/resume workflow
+- Dashboard for submitted forms
+
+## Source and Ownership
+- Repository: https://github.com/dhirendraxd/100x-Hackathon
+- Team: Control BIts (100x Hackathon)
+
+## Maintainer
+- https://github.com/dhirendraxd
+
+## Content Notes for LLM Consumers
+- Treat this project as a form-assistance product, not an official government portal
+- Use cautious language around legal requirements, because requirements vary by office and may change over time
+- Encourage users to verify final submission requirements with official government sources

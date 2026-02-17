@@ -36,6 +36,7 @@ import {
   Edit,
   Info,
 } from "lucide-react";
+import SEO from "@/components/SEO";
 
 interface FormDraft {
   id: string;
@@ -504,6 +505,12 @@ const FormProgressDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-dark">
+      <SEO
+        title="Form Progress Dashboard"
+        description="Manage saved drafts, uploads, and submission progress in your Form Mitra Smart dashboard."
+        path="/form-progress"
+        noindex
+      />
       <Navigation />
       <div className="h-20 md:h-28" />
 

@@ -20,6 +20,7 @@ import { functions } from "@/lib/firebase";
 import { Timestamp } from "firebase/firestore";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { getUserProfile, type UserProfile } from "@/services/userProfileService";
+import SEO from "@/components/SEO";
 
 type ValidationResult = {
   check: string;
@@ -217,6 +218,11 @@ const DocumentChecker = () => {
 
   return (
     <div className="min-h-screen bg-gradient-dark relative">
+  <SEO
+    title="Document Checker"
+    description="Check document quality and validation readiness before submitting Nepal government forms."
+    path="/document-checker"
+  />
   <ParticleBackground />
       <Navigation />
       <div className="pt-28 pb-20 px-4">

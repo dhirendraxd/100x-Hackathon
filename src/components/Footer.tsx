@@ -53,23 +53,26 @@ const Footer = ({ compact = false }: FooterProps) => {
               <Link to="/form-filler" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 Form Filler
               </Link>
+              <Link to="/resources" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                Resources
+              </Link>
             </nav>
           </div>
 
           <div className="space-y-4">
             <h3 className="font-semibold text-foreground">Resources</h3>
             <nav className="flex flex-col space-y-2">
-              <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">FAQ</a>
-              <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Help Center</a>
-              <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a>
-              <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Terms of Service</a>
+              <Link to="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">FAQ</Link>
+              <Link to="/help-center" className="text-sm text-muted-foreground hover:text-primary transition-colors">Help Center</Link>
+              <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="text-sm text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
             </nav>
           </div>
 
           <div className="space-y-4">
             <h3 className="font-semibold text-foreground">Connect</h3>
             <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-lg bg-muted/50 hover:bg-primary/20 flex items-center justify-center transition-all hover:scale-110" aria-label="Email">
+              <a href="mailto:support@mitrasmart.com" className="w-10 h-10 rounded-lg bg-muted/50 hover:bg-primary/20 flex items-center justify-center transition-all hover:scale-110" aria-label="Email">
                 <Mail className="w-5 h-5 text-muted-foreground hover:text-primary" />
               </a>
               <a href="#" className="w-10 h-10 rounded-lg bg-muted/50 hover:bg-primary/20 flex items-center justify-center transition-all hover:scale-110" aria-label="GitHub">

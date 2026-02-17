@@ -81,6 +81,16 @@ npm run preview     # Preview production build
 npm run lint        # Run ESLint
 ```
 
+## 🔎 SEO Assets
+
+This repo now includes technical and LLM-discovery SEO files in `public/`:
+
+- `sitemap.xml` — crawlable public route index
+- `robots.txt` — crawler rules + sitemap reference
+- `llms.txt` — detailed LLM-readable project context
+
+Also see `SEO_OFFPAGE_PLAYBOOK.md` for off-page SEO execution steps.
+
 ## 🗂️ Project Structure
 
 ```txt

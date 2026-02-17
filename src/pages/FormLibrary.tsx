@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from 'react-i18next';
+import SEO from "@/components/SEO";
 
 const FormLibrary = () => {
   const navigate = useNavigate();
@@ -143,6 +144,11 @@ const FormLibrary = () => {
 
   return (
     <div className="min-h-screen bg-gradient-dark">
+      <SEO
+        title="Form Library"
+        description="Browse digitized Nepal government forms by department and difficulty with Form Mitra Smart."
+        path="/form-library"
+      />
       <Navigation />
   <div className="h-20 md:h-28" />
 

@@ -11,6 +11,7 @@ import { validateDocumentEnhanced, formatFileSize, type EnhancedValidationResult
 import { nepalGovForms, type GovForm } from '@/data/nepalGovForms';
 import { saveUploadedFile } from '@/services/userProfileService';
 import { useTranslation } from 'react-i18next';
+import SEO from '@/components/SEO';
 
 interface AIInsight {
   status: 'processing' | 'complete';
@@ -359,6 +360,11 @@ export default function SmartSearch() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <SEO
+        title="Government Forms Search"
+        description="Browse Nepal government forms, view required documents, find nearby offices, and pre-check files before submission."
+        path="/search"
+      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
