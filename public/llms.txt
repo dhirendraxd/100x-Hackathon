@@ -20,6 +20,7 @@ The app includes authentication, profile-aware behavior, draft persistence, and 
 - Users who want to reduce rejection risk before office submission
 
 ## Core User Flows
+
 1. Open Home and navigate to Government Form Search
 2. Browse service forms and required document lists
 3. Upload files for quality checks and validation feedback
